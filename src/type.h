@@ -24,14 +24,17 @@ public:
     Type(ValueType valueType);  // 构造函数
 public:  
     /* 如果你要设计复杂类型系统的话，可以修改这一部分 */
-    ValueType* childType; // for union or struct
-    ValueType* paramType, retType; // for function
+    Type* child = nullptr, *params = nullptr;
+    ValueType retType;
+    //ValueType* childType; // for union or struct
+    //ValueType* paramType, retType; // for function
     
     void addChild(Type* t);
     void addParam(Type* t);
     void addRet(Type* t);
 public:
-    ValueType* sibling; 
+    Type* sibling = nullptr;
+    //ValueType* sibling;
 public:
     string getTypeInfo();
 };
