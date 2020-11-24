@@ -1,5 +1,6 @@
 #include "type.h"
 
+// 构造函数
 Type::Type(ValueType valueType) {
     this->type = valueType;
 }
@@ -19,4 +20,24 @@ string Type::getTypeInfo() {
             assert(0);
     }
     return "?";
+}
+
+void Type::addChild(Type* t)
+{
+
+}
+
+void Type::addParam(Type* t)
+{
+
+}
+
+void Type::addRet(Type* t)
+{
+
+}
+
+int getSize(Type* type)
+{
+    
 }

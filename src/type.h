@@ -3,6 +3,7 @@
 #include "./pch.h"
 using namespace std;
 
+// 值的类型
 enum ValueType
 {
     VALUE_BOOL,
@@ -10,15 +11,17 @@ enum ValueType
     VALUE_CHAR,
     VALUE_STRING,
     COMPOSE_STRUCT,
-    COMPOSE_UNION,
-    COMPOSE_FUNCTION
+    COMPOSE_UNION,  // 复合数据类型
+    COMPOSE_FUNCTION  // 函数
 };
 
+
+// 类型系统
 class Type
 {
 public:
-    ValueType type;
-    Type(ValueType valueType);
+    ValueType type;  // 类型
+    Type(ValueType valueType);  // 构造函数
 public:  
     /* 如果你要设计复杂类型系统的话，可以修改这一部分 */
     ValueType* childType; // for union or struct
@@ -39,6 +42,6 @@ static Type* TYPE_CHAR = new Type(VALUE_CHAR);
 static Type* TYPE_BOOL = new Type(VALUE_BOOL);
 static Type* TYPE_STRING = new Type(VALUE_STRING);
 
-int getSize(Type* type);
+int getSize(Type* type);  // 知道这个类型应该生成多大的空间
 
 #endif

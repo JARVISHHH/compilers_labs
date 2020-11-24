@@ -1,15 +1,26 @@
 #include "tree.h"
-void TreeNode::addChild(TreeNode* child) {
 
+TreeNode::TreeNode(int lineno, NodeType type) {
+
+}
+
+void TreeNode::addChild(TreeNode* child) {
+    // 若当前没有孩子
+    if(this->child == nullptr)
+        this->child = child;
+    else
+    {
+        TreeNode* cur = this->child;
+        for(; cur->sibling != nullptr; cur = cur->sibling);
+        cur->sibling = child;
+    }
+    
 }
 
 void TreeNode::addSibling(TreeNode* sibling){
 
 }
 
-TreeNode::TreeNode(int lineno, NodeType type) {
-
-}
 
 void TreeNode::genNodeId() {
 

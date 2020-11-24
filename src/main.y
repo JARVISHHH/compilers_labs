@@ -73,6 +73,6 @@ T: T_INT {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_INT;}
 
 int yyerror(char const* message)
 {
-  cout << message << " at line " << lineno << endl;
-  return -1;
+    cout << message << " at line " << lineno << endl;
+    return -1;
 }
