@@ -65,24 +65,14 @@ void TreeNode::printNodeInfo() {
     else if(this->nodeType == NODE_EXPR)
     {
         cout<< "children: [";
-        TreeNode* child = this->child;
-        while(child != nullptr)
-        {
-            cout<< "@" << child->nodeID;
-            child = child->sibling;
-        }
+        this->printChildrenId();
         cout << "]" << '\t';
     }
     // 如果是语句，输出孩子和语句类型
     else if(this->nodeType == NODE_STMT)
     {
         cout<< "children: [";
-        TreeNode* child = this->child;
-        while(child != nullptr)
-        {
-            cout<< "@" << child->nodeID;
-            child = child->sibling;
-        }
+        this->printChildrenId();
         cout << "]\t";
         cout << this->sType2String(this->stype) << '\t';
     }
@@ -90,7 +80,13 @@ void TreeNode::printNodeInfo() {
 }
 
 void TreeNode::printChildrenId() {
-
+    // 遍历输出所有孩子的id
+    TreeNode* child = this->child;
+    while(child != nullptr)
+    {
+        cout<< "@" << child->nodeID;
+        child = child->sibling;
+    }
 }
 
 void TreeNode::printAST() {
