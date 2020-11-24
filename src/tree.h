@@ -52,7 +52,7 @@ enum StmtType {
 // 树结点
 struct TreeNode {
 public:
-    int nodeID;  // 用于作业的序号输出
+    int nodeID = -1;  // 用于作业的序号输出
     int lineno;  // 行号
     NodeType nodeType;  // 结点类型
 
