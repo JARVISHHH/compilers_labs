@@ -84,13 +84,13 @@ void TreeNode::printChildrenId() {
     TreeNode* child = this->child;
     while(child != nullptr)
     {
-        cout<< "@" << child->nodeID;
+        cout<< "@" << child->nodeID << " ";
         child = child->sibling;
     }
 }
 
 void TreeNode::printAST() {
-    int max = 0;
+    int max = 0, before_line = 0;
     this->printNodeInfo();
     TreeNode* cur;
     // 深度优先遍历排序号
@@ -110,6 +110,11 @@ void TreeNode::printAST() {
             child->printNodeInfo();
             max = child->nodeID;
             s.push(child);
+            if(child->lineno > before_line)
+            {
+                cout << endl;
+                before_line = child->lineno;
+            }
         }
     }
 }
