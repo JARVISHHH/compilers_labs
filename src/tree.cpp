@@ -61,32 +61,26 @@ void TreeNode::printNodeInfo() {
     // 如果是变量，输出变量名
     else if(this->nodeType == NODE_VAR)
         cout << "varname: " << this->var_name << '\t';
-    // 如果是表达式，输出所有的孩子结点
-    else if(this->nodeType == NODE_EXPR)
-    {
-        cout<< "children: [";
-        this->printChildrenId();
-        cout << "]" << '\t';
-    }
-    // 如果是语句，输出孩子和语句类型
-    else if(this->nodeType == NODE_STMT)
-    {
-        cout<< "children: [";
-        this->printChildrenId();
-        cout << "]\t";
+    // 如果有孩子就输出孩子
+    this->printChildrenId();
+    // 如果是语句，输出语句类型
+    if(this->nodeType == NODE_STMT)
         cout << this->sType2String(this->stype) << '\t';
-    }
     cout << endl;
 }
 
 void TreeNode::printChildrenId() {
     // 遍历输出所有孩子的id
     TreeNode* child = this->child;
+    if(child == nullptr)
+        return;
+    cout<< "children: [";
     while(child != nullptr)
     {
         cout<< "@" << child->nodeID << " ";
         child = child->sibling;
     }
+    cout << "]\t";
 }
 
 void TreeNode::printAST() {
@@ -158,6 +152,7 @@ string TreeNode::sType2String(StmtType type) {
     default:
         break;
     }
+    return "nonetype";
 }
 
 
@@ -176,7 +171,14 @@ string TreeNode::nodeType2String (NodeType type){
         return "statement";
     case NODE_PROG:
         return "program";
+    case NODE_INIT:
+        return "initiation";
+    case NODE_FUNC:
+        return "function";
+    case NODE_PARAM:
+        return "parameters";
     default:
         break;
     }
+    return "nonetype";
 }

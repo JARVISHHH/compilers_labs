@@ -12,9 +12,12 @@ enum NodeType
     NODE_VAR,  // 变量
     NODE_EXPR,  // 表达式
     NODE_TYPE,  // 类型
+    NODE_INIT,  // 初始化
+    NODE_PARAM, 
 
     NODE_STMT,
     NODE_PROG,
+    NODE_FUNC
 };
 
 // 操作数类型
@@ -44,8 +47,10 @@ enum StmtType {
     // STMT_SEQ,
     STMT_IF_ELSE,
     STMT_WHILE,
+    STMT_FOR,
     STMT_PRINTF,
     STMT_SCANF,
+    STMT_RETURN
 }
 ;
 
