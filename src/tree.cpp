@@ -106,15 +106,15 @@ void TreeNode::printAST() {
             s.pop();
         else
         {
-            // 仅在压栈时输出
-            child->printNodeInfo();
-            max = child->nodeID;
-            s.push(child);
             if(child->lineno > before_line)
             {
                 cout << endl;
                 before_line = child->lineno;
             }
+            // 仅在压栈时输出
+            child->printNodeInfo();
+            max = child->nodeID;
+            s.push(child);
         }
     }
 }
