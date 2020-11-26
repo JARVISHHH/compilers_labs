@@ -28,4 +28,6 @@ clean:
 	rm -f src/*.output src/main.lex.yy.cpp src/main.tab.cpp src/main.tab.h src/main.output src/pch.h.gch $(TARGET) *.o ./bin/* 
 
 test: 
-	./bin/main tests/test.c > result.txt
+	./bin/main tests/test.c > result_test.txt
+	./bin/main tests/0.c > result_0.txt
+	./bin/main tests/1.c > result_1.txt
