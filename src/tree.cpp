@@ -226,8 +226,10 @@ string TreeNode::sType2String(StmtType type) {
         return "decl";
     case STMT_ASSIGN:
         return "assign";
-    case STMT_IF_ELSE:
+    case STMT_IF:
         return "if";
+    case STMT_ELSE:
+        return "else";
     case STMT_WHILE:
         return "while";
     case STMT_PRINTF:

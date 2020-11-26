@@ -85,9 +85,12 @@ extern int yydebug;
     BOOL = 291,
     STRING = 292,
     SEMICOLON = 293,
-    UDMINUS = 294,
-    UDPLUS = 295,
-    UMINUS = 296
+    IFX = 294,
+    EQ_ASSIGN = 295,
+    UDMINUS = 296,
+    UDPLUS = 297,
+    UMINUS = 298,
+    POINTER = 299
   };
 #endif
 

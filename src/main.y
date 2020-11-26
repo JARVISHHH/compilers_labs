@@ -27,9 +27,12 @@
 
 %token SEMICOLON
 
+%nonassoc IFX
+%nonassoc ELSE
+
 %left COMMA
 
-%left LOP_ASSIGN
+%right LOP_ASSIGN EQ_ASSIGN
 %left AND OR
 %left RELOP
 %left PLUS MINUS
@@ -55,16 +58,25 @@ statements
 
 statement
 : SEMICOLON  {$$ = new TreeNode(lineno, NODE_STMT); $$->stype = STMT_SKIP;}
-| function {$$ = $1;}
+| matched_stmt %prec IFX{$$ = $1;}
+| unmatched_stmt {$$ = $1;}
+;
+
+matched_stmt
+: function {$$ = $1;}
 | while_stmt {$$ = $1;}
 | for_stmt {$$ = $1;}
-| if_else_stmt {$$ = $1;}
 | ASSIGN_stmt SEMICOLON {$$ = $1;}
 | RETURN_stmt SEMICOLON {$$ = $1;}
 | declaration SEMICOLON {$$ = $1;}
 | printf_stmt SEMICOLON {$$ = $1;}
 | scanf_stmt SEMICOLON {$$ = $1;}
 | expr SEMICOLON {$$ = $1;}
+| matched_if_stmt {$$ = $1;}
+;
+
+unmatched_stmt
+: unmatched_if_stmt {$$ = $1;}
 ;
 
 function
@@ -73,10 +85,9 @@ function
     node->type = new Type(COMPOSE_FUNCTION);
     node->type->addRet($1->type);
     TreeNode* cur = $4;
-    while(cur!=nullptr)
+    while(cur != nullptr)
     {
-        if(cur->nodeType == NODE_TYPE)
-            node->type->addParam(cur->type);
+        node->type->addParam(cur->type);
         cur = cur->sibling;
     }
     node->addChild($1);
@@ -99,17 +110,26 @@ function
 params
 : T IDENTIFIER {
     $$ = $1;
-    $1->addSibling($2);
+    $$->addChild($2);
 }
-| params COMMA T IDENTIFIER {
+| T IDENTIFIER EQ_ASSIGN CONST {
+    $$ = $1;
+    $$->addChild($2);
+    $$->addChild($4);
+}
+| params COMMA params {
     $$ = $1;
     $$->addSibling($3);
-    $$->addSibling($4);
 }
 ;
 
 ASSIGN_stmt
 : IDENTIFIER LOP_ASSIGN expr {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+}
+| IDENTIFIER EQ_ASSIGN expr {
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
@@ -177,13 +197,59 @@ for_stmt
 }
 ;
 
-if_else_stmt
-: IF LPAREN expr RPAREN statement {
+
+matched_if_stmt
+: IF LPAREN expr RPAREN matched_stmt ELSE matched_stmt {
+    $$ = $1;
+    $$->addChild($3);
+    $$->addChild($5);
+    $$->addSibling($6);
+    $6->addChild($7);
+}
+| IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE matched_stmt {
+    $$ = $1;
+    $$->addChild($3);
+    $$->addChild($6);
+    $$->addSibling($8);
+    $8->addChild($9);
+}
+| IF LPAREN expr RPAREN matched_stmt ELSE LBRACE statements RBRACE {
+    $$ = $1;
+    $$->addChild($3);
+    $$->addChild($5);
+    $$->addSibling($6);
+    $6->addChild($8);
+}
+| IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
+    $$ = $1;
+    $$->addChild($3);
+    $$->addChild($6);
+    $$->addSibling($8);
+    $8->addChild($10);
+}
+;
+
+unmatched_if_stmt
+: IF LPAREN expr RPAREN matched_stmt ELSE unmatched_stmt {
+    $$ = $1;
+    $$->addChild($3);
+    $$->addChild($5);
+    $$->addSibling($6);
+    $6->addChild($7);
+}
+| IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE unmatched_stmt {
+    $$ = $1;
+    $$->addChild($3);
+    $$->addChild($6);
+    $$->addSibling($8);
+    $8->addChild($9);
+}
+| IF LPAREN expr RPAREN statement {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
 }
-| IF LPAREN expr RPAREN LBRACE statements RBRACE{
+| IF LPAREN expr RPAREN LBRACE statements RBRACE %prec IFX {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($6);
@@ -214,10 +280,6 @@ expr
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
-    // TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    // node->addChild($1);
-    // node->addChild($3);
-    // $$ = node;
 }
 | expr PLUS expr {
     $$ = $2;
@@ -268,7 +330,13 @@ term
 : IDENTIFIER {
     $$ = $1;
 }
-| INTEGER {
+| CONST {
+    $$ = $1;
+}
+;
+
+CONST
+: INTEGER {
     $$ = $1;
 }
 | CHAR {
@@ -280,7 +348,7 @@ term
 ;
 
 declare_id_list
-: ASSIGN_stmt {$$ = $1;}
+: ASSIGN_stmt {$$ = $1; $$->nodeType = NODE_INIT;}
 | MULT IDENTIFIER %prec POINTER {$$ = $2;}
 | IDENTIFIER {$$ = $1;}
 | declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
@@ -293,7 +361,7 @@ printf_id_list
 
 scanf_id_list
 : IDENTIFIER {$$ = $1;}
-| POS IDENTIFIER {$$ = $1;}
+| POS IDENTIFIER {$$ = $2;}
 | scanf_id_list COMMA scanf_id_list {$$ = $1; $$->addSibling($3);}
 ;
 

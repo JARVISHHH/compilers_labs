@@ -18,7 +18,7 @@ LINECOMMENT \/\/[^\n]*
 EOL	(\r\n|\r|\n)
 WHILTESPACE [[:blank:]]
 
-ASSIGN          [=]|[*][=]|[+][=]|[-][=]|[/][=]
+ASSIGN          [*][=]|[+][=]|[-][=]|[/][=]
 RELOP           [>]|[<]|[>][=]|[<][=]|[=][=]|[!][=]
 
 INTEGER [0-9]+
@@ -141,9 +141,16 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 
 {IF} {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
-    node->stype = STMT_IF_ELSE;
+    node->stype = STMT_IF;
     yylval = node;
     return IF;
+}
+
+{ELSE} {
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ELSE;
+    yylval = node;
+    return ELSE;
 }
 
 {PRINTF} {
@@ -164,9 +171,7 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
     yylval = node;
-    if(!memcmp(yytext, "=", 2))
-        node->optype = OP_ASSIGN;
-    else if(!memcmp(yytext, "+=", 2))
+    if(!memcmp(yytext, "+=", 2))
         node->optype = OP_PLUSASSIGN;
     else if(!memcmp(yytext, "-=", 2))
         node->optype = OP_MINUSASSIGN;
@@ -176,6 +181,15 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
         node->optype = OP_DIVASSIGN;
     return LOP_ASSIGN;
 }
+
+"=" {
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ASSIGN;
+    node->optype = OP_ASSIGN;
+    yylval = node;
+    return EQ_ASSIGN;
+}
+
 {RELOP} {
     TreeNode* node = new TreeNode(lineno, NODE_EXPR);
     yylval = node;
