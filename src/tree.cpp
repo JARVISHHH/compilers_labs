@@ -61,6 +61,10 @@ void TreeNode::printNodeInfo() {
     // 如果是变量，输出变量名
     else if(this->nodeType == NODE_VAR)
         cout << "varname: " << this->var_name << '\t';
+    else if(this->nodeType == NODE_OP)
+        cout << "op: " << this->getOP() << '\t';
+    this->printConstValue();
+    this->printOP();
     // 如果有孩子就输出孩子
     this->printChildrenId();
     // 如果是语句，输出语句类型
@@ -113,6 +117,87 @@ void TreeNode::printAST() {
     }
 }
 
+void TreeNode::printConstValue() {
+    if(this->nodeType != NODE_CONST)
+        return;
+    switch(this->type->type) {
+        case VALUE_INT:
+            cout << "value: " << this->int_val << '\t';
+            break;
+        case VALUE_CHAR:
+            cout << "value:" << this->ch_val << '\t';
+            break;
+        case VALUE_STRING:
+            cout << "value:" << this->str_val << '\t';
+            break;
+        default:
+            break;
+    }
+    return;
+}
+
+void TreeNode::printOP() {
+    string op = this->getOP();
+    if(op == "unknown op") return;
+    if(this->nodeType != NODE_EXPR && !(this->nodeType == NODE_STMT && this->stype == STMT_ASSIGN)) return;
+    cout << "op: " << op << '\t';
+    return;
+}
+
+string TreeNode::getOP() {
+    switch (optype)
+    {
+    case OP_PLUS:
+        return "+";
+    case OP_MINUS:
+        return "-";
+    case OP_MULT:
+        return "*";
+    case OP_DIV:
+        return "/";
+    case OP_AND:
+        return "&&";
+    case OP_OR:
+        return "||";
+    case OP_NOT:
+        return "!";
+    case OP_ASSIGN:
+        return "=";
+    case OP_MULASSIGN:
+        return "*=";
+    case OP_PLUSASSIGN:
+        return "+=";
+    case OP_MINUSASSIGN:
+        return "-=";
+    case OP_DIVASSIGN:
+        return "/=";
+    case OP_L:
+        return ">";
+    case OP_LEQ:
+        return ">=";
+    case OP_S:
+        return "<";
+    case OP_SEQ:
+        return "<=";
+    case OP_EQ:
+        return "==";
+    case OP_NEQ:
+        return "!=";
+    case OP_P:
+        return "()";
+    case OP_DPLUS:
+        return "++";
+    case OP_DMINUS:
+        return "--";
+    case OP_MOD:
+        return "%";
+    case OP_POS:
+        return "&";
+    default:
+        return "unknown op";
+    }
+}
+
 
 // You can output more info...
 void TreeNode::printSpecialInfo() {
@@ -149,6 +234,8 @@ string TreeNode::sType2String(StmtType type) {
         return "prinf";
     case STMT_SCANF:
         return "scanf";
+    case STMT_FOR:
+        return "for";
     default:
         break;
     }
@@ -177,6 +264,8 @@ string TreeNode::nodeType2String (NodeType type){
         return "function";
     case NODE_PARAM:
         return "parameters";
+    case NODE_OP:
+        return "operation";
     default:
         break;
     }

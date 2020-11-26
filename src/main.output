@@ -57,7 +57,7 @@ Grammar
    33 expr: expr MOD expr
    34     | expr PLUS expr
    35     | expr MINUS expr
-   36     | expr STAR expr
+   36     | expr MULT expr
    37     | expr DIV expr
    38     | expr AND expr
    39     | expr OR expr
@@ -111,79 +111,81 @@ Terminals, with rules where they appear
     RBRACE (274) 15 16 23 26 27 29
     COMMA (275) 18 31 32 56 57
     POS (276) 54
-    RELOP (277) 40
-    MOD (278) 33
-    PLUS (279) 34
-    MINUS (280) 35 46
-    STAR (281) 36
-    DIV (282) 37
-    AND (283) 38
-    OR (284) 39
-    NOT (285) 45
-    IDENTIFIER (286) 15 16 17 18 19 49 55 57
-    INTEGER (287) 50
-    CHAR (288) 51
-    BOOL (289)
-    STRING (290) 31 32 52
-    SEMICOLON (291) 4 10 11 12 13 14 19 24 25 26 27
-    DMINUS (292) 43 44
-    DPLUS (293) 41 42
-    UMINUS (294)
+    MOD (277) 33
+    PLUS (278) 34
+    MINUS (279) 35 46
+    MULT (280) 36
+    DIV (281) 37
+    AND (282) 38
+    OR (283) 39
+    NOT (284) 45
+    DMINUS (285) 43 44
+    DPLUS (286) 41 42
+    RELOP (287) 40
+    IDENTIFIER (288) 15 16 17 18 19 49 55 57
+    INTEGER (289) 50
+    CHAR (290) 51
+    BOOL (291)
+    STRING (292) 31 32 52
+    SEMICOLON (293) 4 10 11 12 13 14 19 24 25 26 27
+    UDMINUS (294)
+    UDPLUS (295)
+    UMINUS (296)
 
 
 Nonterminals, with rules where they appear
 
-    $accept (40)
+    $accept (42)
         on left: 0
-    program (41)
+    program (43)
         on left: 1
         on right: 0
-    statements (42)
+    statements (44)
         on left: 2 3
         on right: 1 3 15 16 23 26 27 29
-    statement (43)
+    statement (45)
         on left: 4 5 6 7 8 9 10 11 12 13 14
         on right: 2 3 22 24 25 28
-    function (44)
+    function (46)
         on left: 15 16
         on right: 5
-    params (45)
+    params (47)
         on left: 17 18
         on right: 15 18
-    ASSIGN_stmt (46)
+    ASSIGN_stmt (48)
         on left: 19
         on right: 9 24 26
-    RETURN_stmt (47)
+    RETURN_stmt (49)
         on left: 20
         on right: 10
-    declaration (48)
+    declaration (50)
         on left: 21
         on right: 11 25 27
-    while_stmt (49)
+    while_stmt (51)
         on left: 22 23
         on right: 6
-    for_stmt (50)
+    for_stmt (52)
         on left: 24 25 26 27
         on right: 7
-    if_else_stmt (51)
+    if_else_stmt (53)
         on left: 28 29
         on right: 8
-    printf_stmt (52)
+    printf_stmt (54)
         on left: 30 31
         on right: 12
-    scanf_stmt (53)
+    scanf_stmt (55)
         on left: 32
         on right: 13
-    expr (54)
+    expr (56)
         on left: 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
         on right: 14 19 20 22 23 24 25 26 27 28 29 30 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 53 54 55 56 57
-    term (55)
+    term (57)
         on left: 49 50 51 52
         on right: 48
-    id_list (56)
+    id_list (58)
         on left: 53 54 55 56 57
         on right: 21 31 32 56 57
-    T (57)
+    T (59)
         on left: 58 59 60 61
         on right: 15 16 17 18 21
 
@@ -205,13 +207,13 @@ State 0
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     program       go to state 21
     statements    go to state 22
@@ -291,12 +293,12 @@ State 8
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 40
     term  go to state 34
@@ -324,12 +326,12 @@ State 11
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 43
     term  go to state 34
@@ -342,12 +344,12 @@ State 12
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 44
     term  go to state 34
@@ -360,12 +362,12 @@ State 13
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 45
     term  go to state 34
@@ -373,76 +375,76 @@ State 13
 
 State 14
 
-   19 ASSIGN_stmt: IDENTIFIER . LOP_ASSIGN expr SEMICOLON
-   49 term: IDENTIFIER .
-
-    LOP_ASSIGN  shift, and go to state 46
-
-    $default  reduce using rule 49 (term)
-
-
-State 15
-
-   50 term: INTEGER .
-
-    $default  reduce using rule 50 (term)
-
-
-State 16
-
-   51 term: CHAR .
-
-    $default  reduce using rule 51 (term)
-
-
-State 17
-
-   52 term: STRING .
-
-    $default  reduce using rule 52 (term)
-
-
-State 18
-
-    4 statement: SEMICOLON .
-
-    $default  reduce using rule 4 (statement)
-
-
-State 19
-
    43 expr: DMINUS . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
-    expr  go to state 47
+    expr  go to state 46
     term  go to state 34
 
 
-State 20
+State 15
 
    41 expr: DPLUS . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
-    expr  go to state 48
+    expr  go to state 47
     term  go to state 34
+
+
+State 16
+
+   19 ASSIGN_stmt: IDENTIFIER . LOP_ASSIGN expr SEMICOLON
+   49 term: IDENTIFIER .
+
+    LOP_ASSIGN  shift, and go to state 48
+
+    $default  reduce using rule 49 (term)
+
+
+State 17
+
+   50 term: INTEGER .
+
+    $default  reduce using rule 50 (term)
+
+
+State 18
+
+   51 term: CHAR .
+
+    $default  reduce using rule 51 (term)
+
+
+State 19
+
+   52 term: STRING .
+
+    $default  reduce using rule 52 (term)
+
+
+State 20
+
+    4 statement: SEMICOLON .
+
+    $default  reduce using rule 4 (statement)
 
 
 State 21
@@ -470,13 +472,13 @@ State 22
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     $default  reduce using rule 1 (program)
 
@@ -571,7 +573,7 @@ State 33
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -579,17 +581,17 @@ State 33
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    RELOP      shift, and go to state 55
-    MOD        shift, and go to state 56
-    PLUS       shift, and go to state 57
-    MINUS      shift, and go to state 58
-    STAR       shift, and go to state 59
-    DIV        shift, and go to state 60
-    AND        shift, and go to state 61
-    OR         shift, and go to state 62
-    SEMICOLON  shift, and go to state 63
-    DMINUS     shift, and go to state 64
-    DPLUS      shift, and go to state 65
+    MOD        shift, and go to state 55
+    PLUS       shift, and go to state 56
+    MINUS      shift, and go to state 57
+    MULT       shift, and go to state 58
+    DIV        shift, and go to state 59
+    AND        shift, and go to state 60
+    OR         shift, and go to state 61
+    DMINUS     shift, and go to state 62
+    DPLUS      shift, and go to state 63
+    RELOP      shift, and go to state 64
+    SEMICOLON  shift, and go to state 65
 
 
 State 34
@@ -609,12 +611,12 @@ State 35
     POS         shift, and go to state 66
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 67
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr     go to state 68
     term     go to state 34
@@ -629,12 +631,12 @@ State 36
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 70
     term  go to state 34
@@ -666,12 +668,12 @@ State 38
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 75
     term  go to state 34
@@ -690,7 +692,7 @@ State 40
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -698,16 +700,16 @@ State 40
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 20 (RETURN_stmt)
 
@@ -720,12 +722,12 @@ State 41
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
     STRING      shift, and go to state 76
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
 
     expr  go to state 77
     term  go to state 34
@@ -743,7 +745,7 @@ State 43
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -753,16 +755,16 @@ State 43
    47     | LPAREN expr . RPAREN
 
     RPAREN  shift, and go to state 79
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
 
 State 44
@@ -770,7 +772,7 @@ State 44
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -778,6 +780,9 @@ State 44
    42     | expr . DPLUS
    44     | expr . DMINUS
    46     | MINUS expr .
+
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
     $default  reduce using rule 46 (expr)
 
@@ -787,7 +792,7 @@ State 45
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -796,36 +801,18 @@ State 45
    44     | expr . DMINUS
    45     | NOT expr .
 
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
     $default  reduce using rule 45 (expr)
 
 
 State 46
 
-   19 ASSIGN_stmt: IDENTIFIER LOP_ASSIGN . expr SEMICOLON
-
-    LPAREN      shift, and go to state 11
-    MINUS       shift, and go to state 12
-    NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
-
-    expr  go to state 80
-    term  go to state 34
-
-
-State 47
-
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -834,15 +821,18 @@ State 47
    43     | DMINUS expr .
    44     | expr . DMINUS
 
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+
     $default  reduce using rule 43 (expr)
 
 
-State 48
+State 47
 
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -851,7 +841,28 @@ State 48
    42     | expr . DPLUS
    44     | expr . DMINUS
 
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+
     $default  reduce using rule 41 (expr)
+
+
+State 48
+
+   19 ASSIGN_stmt: IDENTIFIER LOP_ASSIGN . expr SEMICOLON
+
+    LPAREN      shift, and go to state 11
+    MINUS       shift, and go to state 12
+    NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 39
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+
+    expr  go to state 80
+    term  go to state 34
 
 
 State 49
@@ -898,17 +909,17 @@ State 54
 
 State 55
 
-   40 expr: expr RELOP . expr
+   33 expr: expr MOD . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 81
     term  go to state 34
@@ -916,17 +927,17 @@ State 55
 
 State 56
 
-   33 expr: expr MOD . expr
+   34 expr: expr PLUS . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 82
     term  go to state 34
@@ -934,17 +945,17 @@ State 56
 
 State 57
 
-   34 expr: expr PLUS . expr
+   35 expr: expr MINUS . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 83
     term  go to state 34
@@ -952,17 +963,17 @@ State 57
 
 State 58
 
-   35 expr: expr MINUS . expr
+   36 expr: expr MULT . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 84
     term  go to state 34
@@ -970,17 +981,17 @@ State 58
 
 State 59
 
-   36 expr: expr STAR . expr
+   37 expr: expr DIV . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 85
     term  go to state 34
@@ -988,17 +999,17 @@ State 59
 
 State 60
 
-   37 expr: expr DIV . expr
+   38 expr: expr AND . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 86
     term  go to state 34
@@ -1006,17 +1017,17 @@ State 60
 
 State 61
 
-   38 expr: expr AND . expr
+   39 expr: expr OR . expr
 
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 87
     term  go to state 34
@@ -1024,41 +1035,41 @@ State 61
 
 State 62
 
-   39 expr: expr OR . expr
-
-    LPAREN      shift, and go to state 11
-    MINUS       shift, and go to state 12
-    NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
-
-    expr  go to state 88
-    term  go to state 34
-
-
-State 63
-
-   14 statement: expr SEMICOLON .
-
-    $default  reduce using rule 14 (statement)
-
-
-State 64
-
    44 expr: expr DMINUS .
 
     $default  reduce using rule 44 (expr)
 
 
-State 65
+State 63
 
    42 expr: expr DPLUS .
 
     $default  reduce using rule 42 (expr)
+
+
+State 64
+
+   40 expr: expr RELOP . expr
+
+    LPAREN      shift, and go to state 11
+    MINUS       shift, and go to state 12
+    NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 39
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+
+    expr  go to state 88
+    term  go to state 34
+
+
+State 65
+
+   14 statement: expr SEMICOLON .
+
+    $default  reduce using rule 14 (statement)
 
 
 State 66
@@ -1068,12 +1079,12 @@ State 66
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 89
     term  go to state 34
@@ -1097,7 +1108,7 @@ State 68
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1106,16 +1117,16 @@ State 68
    44     | expr . DMINUS
    53 id_list: expr .
 
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 53 (id_list)
 
@@ -1138,7 +1149,7 @@ State 70
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1147,23 +1158,23 @@ State 70
    44     | expr . DMINUS
 
     RPAREN  shift, and go to state 93
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
 
 State 71
 
    19 ASSIGN_stmt: IDENTIFIER . LOP_ASSIGN expr SEMICOLON
 
-    LOP_ASSIGN  shift, and go to state 46
+    LOP_ASSIGN  shift, and go to state 48
 
 
 State 72
@@ -1190,12 +1201,12 @@ State 74
     POS         shift, and go to state 66
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 96
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr     go to state 68
     term     go to state 34
@@ -1209,7 +1220,7 @@ State 75
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1218,16 +1229,16 @@ State 75
    44     | expr . DMINUS
 
     RPAREN  shift, and go to state 97
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
 
 State 76
@@ -1246,7 +1257,7 @@ State 77
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1255,16 +1266,16 @@ State 77
    44     | expr . DMINUS
 
     RPAREN  shift, and go to state 99
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
 
 State 78
@@ -1287,7 +1298,7 @@ State 80
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1295,53 +1306,48 @@ State 80
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    RELOP      shift, and go to state 55
-    MOD        shift, and go to state 56
-    PLUS       shift, and go to state 57
-    MINUS      shift, and go to state 58
-    STAR       shift, and go to state 59
-    DIV        shift, and go to state 60
-    AND        shift, and go to state 61
-    OR         shift, and go to state 62
+    MOD        shift, and go to state 55
+    PLUS       shift, and go to state 56
+    MINUS      shift, and go to state 57
+    MULT       shift, and go to state 58
+    DIV        shift, and go to state 59
+    AND        shift, and go to state 60
+    OR         shift, and go to state 61
+    DMINUS     shift, and go to state 62
+    DPLUS      shift, and go to state 63
+    RELOP      shift, and go to state 64
     SEMICOLON  shift, and go to state 101
-    DMINUS     shift, and go to state 64
-    DPLUS      shift, and go to state 65
 
 
 State 81
 
    33 expr: expr . MOD expr
+   33     | expr MOD expr .
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
    40     | expr . RELOP expr
-   40     | expr RELOP expr .
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
-    $default  reduce using rule 40 (expr)
+    $default  reduce using rule 33 (expr)
 
 
 State 82
 
    33 expr: expr . MOD expr
-   33     | expr MOD expr .
    34     | expr . PLUS expr
+   34     | expr PLUS expr .
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1349,25 +1355,22 @@ State 82
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
-    $default  reduce using rule 33 (expr)
+    $default  reduce using rule 34 (expr)
 
 
 State 83
 
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
-   34     | expr PLUS expr .
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   35     | expr MINUS expr .
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1375,14 +1378,13 @@ State 83
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
-    $default  reduce using rule 34 (expr)
+    $default  reduce using rule 35 (expr)
 
 
 State 84
@@ -1390,8 +1392,8 @@ State 84
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   35     | expr MINUS expr .
-   36     | expr . STAR expr
+   36     | expr . MULT expr
+   36     | expr MULT expr .
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1399,14 +1401,10 @@ State 84
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
-    $default  reduce using rule 35 (expr)
+    $default  reduce using rule 36 (expr)
 
 
 State 85
@@ -1414,29 +1412,7 @@ State 85
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
-   36     | expr STAR expr .
-   37     | expr . DIV expr
-   38     | expr . AND expr
-   39     | expr . OR expr
-   40     | expr . RELOP expr
-   42     | expr . DPLUS
-   44     | expr . DMINUS
-
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
-
-    $default  reduce using rule 36 (expr)
-
-
-State 86
-
-   33 expr: expr . MOD expr
-   34     | expr . PLUS expr
-   35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    37     | expr DIV expr .
    38     | expr . AND expr
@@ -1445,20 +1421,18 @@ State 86
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
 
     $default  reduce using rule 37 (expr)
 
 
-State 87
+State 86
 
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    38     | expr AND expr .
@@ -1467,18 +1441,24 @@ State 87
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 38 (expr)
 
 
-State 88
+State 87
 
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1487,10 +1467,41 @@ State 88
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 39 (expr)
+
+
+State 88
+
+   33 expr: expr . MOD expr
+   34     | expr . PLUS expr
+   35     | expr . MINUS expr
+   36     | expr . MULT expr
+   37     | expr . DIV expr
+   38     | expr . AND expr
+   39     | expr . OR expr
+   40     | expr . RELOP expr
+   40     | expr RELOP expr .
+   42     | expr . DPLUS
+   44     | expr . DMINUS
+
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+
+    $default  reduce using rule 40 (expr)
 
 
 State 89
@@ -1498,7 +1509,7 @@ State 89
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1507,16 +1518,16 @@ State 89
    44     | expr . DMINUS
    54 id_list: POS expr .
 
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 54 (id_list)
 
@@ -1528,12 +1539,12 @@ State 90
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 102
     term  go to state 34
@@ -1562,12 +1573,12 @@ State 92
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 106
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 107
     term  go to state 34
@@ -1592,13 +1603,13 @@ State 93
     LBRACE      shift, and go to state 108
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 109
     function      go to state 24
@@ -1623,12 +1634,12 @@ State 94
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 110
     term  go to state 34
@@ -1642,12 +1653,12 @@ State 95
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 111
     term  go to state 34
@@ -1682,13 +1693,13 @@ State 97
     LBRACE      shift, and go to state 112
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 113
     function      go to state 24
@@ -1713,12 +1724,12 @@ State 98
     POS         shift, and go to state 66
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 96
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr     go to state 68
     term     go to state 34
@@ -1740,12 +1751,12 @@ State 100
     POS         shift, and go to state 66
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 96
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr     go to state 68
     term     go to state 34
@@ -1764,7 +1775,7 @@ State 102
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1773,16 +1784,16 @@ State 102
    44     | expr . DMINUS
    55 id_list: IDENTIFIER LOP_ASSIGN expr .
 
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 55 (id_list)
 
@@ -1825,7 +1836,7 @@ State 107
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1834,16 +1845,16 @@ State 107
    44     | expr . DMINUS
    56 id_list: id_list COMMA expr .
 
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 56 (id_list)
 
@@ -1865,13 +1876,13 @@ State 108
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statements    go to state 121
     statement     go to state 23
@@ -1903,7 +1914,7 @@ State 110
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1911,17 +1922,17 @@ State 110
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    RELOP      shift, and go to state 55
-    MOD        shift, and go to state 56
-    PLUS       shift, and go to state 57
-    MINUS      shift, and go to state 58
-    STAR       shift, and go to state 59
-    DIV        shift, and go to state 60
-    AND        shift, and go to state 61
-    OR         shift, and go to state 62
+    MOD        shift, and go to state 55
+    PLUS       shift, and go to state 56
+    MINUS      shift, and go to state 57
+    MULT       shift, and go to state 58
+    DIV        shift, and go to state 59
+    AND        shift, and go to state 60
+    OR         shift, and go to state 61
+    DMINUS     shift, and go to state 62
+    DPLUS      shift, and go to state 63
+    RELOP      shift, and go to state 64
     SEMICOLON  shift, and go to state 122
-    DMINUS     shift, and go to state 64
-    DPLUS      shift, and go to state 65
 
 
 State 111
@@ -1931,7 +1942,7 @@ State 111
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -1939,17 +1950,17 @@ State 111
    42     | expr . DPLUS
    44     | expr . DMINUS
 
-    RELOP      shift, and go to state 55
-    MOD        shift, and go to state 56
-    PLUS       shift, and go to state 57
-    MINUS      shift, and go to state 58
-    STAR       shift, and go to state 59
-    DIV        shift, and go to state 60
-    AND        shift, and go to state 61
-    OR         shift, and go to state 62
+    MOD        shift, and go to state 55
+    PLUS       shift, and go to state 56
+    MINUS      shift, and go to state 57
+    MULT       shift, and go to state 58
+    DIV        shift, and go to state 59
+    AND        shift, and go to state 60
+    OR         shift, and go to state 61
+    DMINUS     shift, and go to state 62
+    DPLUS      shift, and go to state 63
+    RELOP      shift, and go to state 64
     SEMICOLON  shift, and go to state 123
-    DMINUS     shift, and go to state 64
-    DPLUS      shift, and go to state 65
 
 
 State 112
@@ -1969,13 +1980,13 @@ State 112
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statements    go to state 124
     statement     go to state 23
@@ -2037,13 +2048,13 @@ State 116
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statements    go to state 127
     statement     go to state 23
@@ -2094,12 +2105,12 @@ State 120
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 130
     term  go to state 34
@@ -2124,13 +2135,13 @@ State 121
     RBRACE      shift, and go to state 131
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 50
     function      go to state 24
@@ -2155,12 +2166,12 @@ State 122
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 132
     term  go to state 34
@@ -2174,12 +2185,12 @@ State 123
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
     IDENTIFIER  shift, and go to state 39
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
 
     expr  go to state 133
     term  go to state 34
@@ -2204,13 +2215,13 @@ State 124
     RBRACE      shift, and go to state 134
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 50
     function      go to state 24
@@ -2260,13 +2271,13 @@ State 127
     RBRACE      shift, and go to state 135
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 50
     function      go to state 24
@@ -2300,13 +2311,13 @@ State 128
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statements    go to state 136
     statement     go to state 23
@@ -2336,7 +2347,7 @@ State 130
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -2345,16 +2356,16 @@ State 130
    44     | expr . DMINUS
    57 id_list: id_list COMMA IDENTIFIER LOP_ASSIGN expr .
 
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
     $default  reduce using rule 57 (id_list)
 
@@ -2373,7 +2384,7 @@ State 132
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -2382,16 +2393,16 @@ State 132
    44     | expr . DMINUS
 
     RPAREN  shift, and go to state 138
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
 
 State 133
@@ -2401,7 +2412,7 @@ State 133
    33 expr: expr . MOD expr
    34     | expr . PLUS expr
    35     | expr . MINUS expr
-   36     | expr . STAR expr
+   36     | expr . MULT expr
    37     | expr . DIV expr
    38     | expr . AND expr
    39     | expr . OR expr
@@ -2410,16 +2421,16 @@ State 133
    44     | expr . DMINUS
 
     RPAREN  shift, and go to state 139
-    RELOP   shift, and go to state 55
-    MOD     shift, and go to state 56
-    PLUS    shift, and go to state 57
-    MINUS   shift, and go to state 58
-    STAR    shift, and go to state 59
-    DIV     shift, and go to state 60
-    AND     shift, and go to state 61
-    OR      shift, and go to state 62
-    DMINUS  shift, and go to state 64
-    DPLUS   shift, and go to state 65
+    MOD     shift, and go to state 55
+    PLUS    shift, and go to state 56
+    MINUS   shift, and go to state 57
+    MULT    shift, and go to state 58
+    DIV     shift, and go to state 59
+    AND     shift, and go to state 60
+    OR      shift, and go to state 61
+    DMINUS  shift, and go to state 62
+    DPLUS   shift, and go to state 63
+    RELOP   shift, and go to state 64
 
 
 State 134
@@ -2455,13 +2466,13 @@ State 136
     RBRACE      shift, and go to state 140
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 50
     function      go to state 24
@@ -2504,13 +2515,13 @@ State 138
     LBRACE      shift, and go to state 141
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 142
     function      go to state 24
@@ -2546,13 +2557,13 @@ State 139
     LBRACE      shift, and go to state 143
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 144
     function      go to state 24
@@ -2593,13 +2604,13 @@ State 141
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statements    go to state 145
     statement     go to state 23
@@ -2641,13 +2652,13 @@ State 143
     LPAREN      shift, and go to state 11
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statements    go to state 146
     statement     go to state 23
@@ -2691,13 +2702,13 @@ State 145
     RBRACE      shift, and go to state 147
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 50
     function      go to state 24
@@ -2733,13 +2744,13 @@ State 146
     RBRACE      shift, and go to state 148
     MINUS       shift, and go to state 12
     NOT         shift, and go to state 13
-    IDENTIFIER  shift, and go to state 14
-    INTEGER     shift, and go to state 15
-    CHAR        shift, and go to state 16
-    STRING      shift, and go to state 17
-    SEMICOLON   shift, and go to state 18
-    DMINUS      shift, and go to state 19
-    DPLUS       shift, and go to state 20
+    DMINUS      shift, and go to state 14
+    DPLUS       shift, and go to state 15
+    IDENTIFIER  shift, and go to state 16
+    INTEGER     shift, and go to state 17
+    CHAR        shift, and go to state 18
+    STRING      shift, and go to state 19
+    SEMICOLON   shift, and go to state 20
 
     statement     go to state 50
     function      go to state 24

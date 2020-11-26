@@ -14,6 +14,7 @@ enum NodeType
     NODE_TYPE,  // 类型
     NODE_INIT,  // 初始化
     NODE_PARAM, 
+    NODE_OP,  // 操作符
 
     NODE_STMT,
     NODE_PROG,
@@ -23,20 +24,29 @@ enum NodeType
 // 操作数类型
 enum OperatorType
 {
-    OP_ADD,  // +
-    OP_SUB,  // -
+    OP_PLUS,  // +
+    OP_MINUS,  // -
     OP_MULT,  // *
-    OP_DEV,  // /
+    OP_DIV,  // /
     OP_AND,  // &&
     OP_OR,  // ||
-    OP_NOT,  // ~
+    OP_NOT,  // !
     OP_ASSIGN,  // =
+    OP_MULASSIGN,
+    OP_PLUSASSIGN,
+    OP_MINUSASSIGN,
+    OP_DIVASSIGN,
     OP_L,  // >
     OP_LEQ,  // >=
     OP_S,  // <
     OP_SEQ,  // <=
     OP_EQ,  // ==
     OP_NEQ,  // !=
+    OP_P,  // ()
+    OP_DPLUS,  // ++
+    OP_DMINUS,  // --
+    OP_MOD,  // %
+    OP_POS,  // &
 };
 
 // 语句类型
@@ -95,6 +105,11 @@ public:
 
     string str_val;  // string值
     string var_name;  // 变量名字
+
+    void printConstValue();  // 如果是常量，就输出内容
+    void printOP();  // 打印运算符
+    string getOP();  // 获得运算符
+
 public:
     // 把一些信息转换为string类型后输出
     static string nodeType2String (NodeType type);

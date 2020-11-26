@@ -39,24 +39,84 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 "char" return T_CHAR;
 "void" return VOID;
 
-"++" return DPLUS;
-"--" return DMINUS;
+"++" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DPLUS;
+    yylval = node;
+    return DPLUS;
+}
+"--" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DMINUS;
+    yylval = node;
+    return DMINUS;
+}
 
-"(" return LPAREN;
+"(" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_P;
+    yylval = node;
+    return LPAREN;
+}
 ")" return RPAREN;
 "{" return LBRACE;
 "}" return RBRACE;
 "," return COMMA;
 ";" return  SEMICOLON;
-"+" return PLUS;
-"-" return MINUS;
-"*" return STAR;
-"/" return DIV;
-"&&" return AND;
-"||" return OR;
-"!" return NOT;
-"&" return POS;
-"%" return MOD;
+"+" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_PLUS;
+    yylval = node;
+    return PLUS;
+}
+"-" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_MINUS;
+    yylval = node;
+    return MINUS;
+}
+"*" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_MULT;
+    yylval = node;
+    return MULT;
+}
+"/" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DIV;
+    yylval = node;
+    return DIV;
+}
+"&&" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_AND;
+    yylval = node;
+    return AND;
+}
+"||" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_OR;
+    yylval = node;
+    return OR;
+}
+"!" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_NOT;
+    yylval = node;
+    return NOT;
+}
+"&" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_POS;
+    yylval = node;
+    return POS;
+}
+"%" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_MOD;
+    yylval = node;
+    return MOD;
+}
 
 
 {WHILE} {
@@ -100,8 +160,39 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return SCANF;
 }
 
-{ASSIGN} return LOP_ASSIGN;
-{RELOP} return RELOP;
+{ASSIGN} {
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ASSIGN;
+    yylval = node;
+    if(!memcmp(yytext, "=", 2))
+        node->optype = OP_ASSIGN;
+    else if(!memcmp(yytext, "+=", 2))
+        node->optype = OP_PLUSASSIGN;
+    else if(!memcmp(yytext, "-=", 2))
+        node->optype = OP_MINUSASSIGN;
+    else if(!memcmp(yytext, "*=", 2))
+        node->optype = OP_MULASSIGN;
+    else if(!memcmp(yytext, "/=", 2))
+        node->optype = OP_DIVASSIGN;
+    return LOP_ASSIGN;
+}
+{RELOP} {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    yylval = node;
+    if(!memcmp(yytext, "==", 2))
+        node->optype = OP_EQ;
+    else if(!memcmp(yytext, "!=", 2))
+        node->optype = OP_NEQ;
+    else if(!memcmp(yytext, ">", 2))
+        node->optype = OP_L;
+    else if(!memcmp(yytext, ">=", 2))
+        node->optype = OP_LEQ;
+    else if(!memcmp(yytext, "<", 2))
+        node->optype = OP_S;
+    else if(!memcmp(yytext, "<=", 2))
+        node->optype = OP_SEQ;
+    return RELOP;
+}
 
 {INTEGER} {
     TreeNode* node = new TreeNode(lineno, NODE_CONST);
@@ -114,7 +205,7 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 {CHAR} {
     TreeNode* node = new TreeNode(lineno, NODE_CONST);
     node->type = TYPE_CHAR;
-    node->int_val = yytext[1];
+    node->ch_val = yytext[1];
     yylval = node;
     return CHAR;
 }

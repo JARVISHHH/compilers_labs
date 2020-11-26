@@ -825,91 +825,151 @@ return VOID;
 case 7:
 YY_RULE_SETUP
 #line 42 "src/main.lex"
-return DPLUS;
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DPLUS;
+    yylval = node;
+    return DPLUS;
+}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 43 "src/main.lex"
-return DMINUS;
+#line 48 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DMINUS;
+    yylval = node;
+    return DMINUS;
+}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 45 "src/main.lex"
-return LPAREN;
+#line 55 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_P;
+    yylval = node;
+    return LPAREN;
+}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 46 "src/main.lex"
+#line 61 "src/main.lex"
 return RPAREN;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 47 "src/main.lex"
+#line 62 "src/main.lex"
 return LBRACE;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 48 "src/main.lex"
+#line 63 "src/main.lex"
 return RBRACE;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 49 "src/main.lex"
+#line 64 "src/main.lex"
 return COMMA;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 50 "src/main.lex"
+#line 65 "src/main.lex"
 return  SEMICOLON;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 51 "src/main.lex"
-return PLUS;
+#line 66 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_PLUS;
+    yylval = node;
+    return PLUS;
+}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 52 "src/main.lex"
-return MINUS;
+#line 72 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_MINUS;
+    yylval = node;
+    return MINUS;
+}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 53 "src/main.lex"
-return STAR;
+#line 78 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_MULT;
+    yylval = node;
+    return MULT;
+}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 54 "src/main.lex"
-return DIV;
+#line 84 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DIV;
+    yylval = node;
+    return DIV;
+}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 55 "src/main.lex"
-return AND;
+#line 90 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_AND;
+    yylval = node;
+    return AND;
+}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 56 "src/main.lex"
-return OR;
+#line 96 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_OR;
+    yylval = node;
+    return OR;
+}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 57 "src/main.lex"
-return NOT;
+#line 102 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_NOT;
+    yylval = node;
+    return NOT;
+}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 58 "src/main.lex"
-return POS;
+#line 108 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_POS;
+    yylval = node;
+    return POS;
+}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 59 "src/main.lex"
-return MOD;
+#line 114 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_MOD;
+    yylval = node;
+    return MOD;
+}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 62 "src/main.lex"
+#line 122 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_WHILE;
@@ -919,7 +979,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 69 "src/main.lex"
+#line 129 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     yylval = node;
@@ -928,7 +988,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 75 "src/main.lex"
+#line 135 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_FOR;
@@ -938,7 +998,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 82 "src/main.lex"
+#line 142 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_IF_ELSE;
@@ -948,7 +1008,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 89 "src/main.lex"
+#line 149 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_PRINTF;
@@ -958,7 +1018,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 96 "src/main.lex"
+#line 156 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_SCANF;
@@ -968,17 +1028,48 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 103 "src/main.lex"
-return LOP_ASSIGN;
+#line 163 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ASSIGN;
+    yylval = node;
+    if(!memcmp(yytext, "=", 2))
+        node->optype = OP_ASSIGN;
+    else if(!memcmp(yytext, "+=", 2))
+        node->optype = OP_PLUSASSIGN;
+    else if(!memcmp(yytext, "-=", 2))
+        node->optype = OP_MINUSASSIGN;
+    else if(!memcmp(yytext, "*=", 2))
+        node->optype = OP_MULASSIGN;
+    else if(!memcmp(yytext, "/=", 2))
+        node->optype = OP_DIVASSIGN;
+    return LOP_ASSIGN;
+}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 104 "src/main.lex"
-return RELOP;
+#line 179 "src/main.lex"
+{
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    yylval = node;
+    if(!memcmp(yytext, "==", 2))
+        node->optype = OP_EQ;
+    else if(!memcmp(yytext, "!=", 2))
+        node->optype = OP_NEQ;
+    else if(!memcmp(yytext, ">", 2))
+        node->optype = OP_L;
+    else if(!memcmp(yytext, ">=", 2))
+        node->optype = OP_LEQ;
+    else if(!memcmp(yytext, "<", 2))
+        node->optype = OP_S;
+    else if(!memcmp(yytext, "<=", 2))
+        node->optype = OP_SEQ;
+    return RELOP;
+}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 106 "src/main.lex"
+#line 197 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_CONST);
     node->type = TYPE_INT;
@@ -989,18 +1080,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 114 "src/main.lex"
+#line 205 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_CONST);
     node->type = TYPE_CHAR;
-    node->int_val = yytext[1];
+    node->ch_val = yytext[1];
     yylval = node;
     return CHAR;
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 122 "src/main.lex"
+#line 213 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_VAR);
     node->var_name = string(yytext);
@@ -1010,7 +1101,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 129 "src/main.lex"
+#line 220 "src/main.lex"
 {
     TreeNode* node = new TreeNode(lineno, NODE_CONST);
     node->type = TYPE_STRING;
@@ -1021,28 +1112,28 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 137 "src/main.lex"
+#line 228 "src/main.lex"
 /* do nothing */
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 139 "src/main.lex"
+#line 230 "src/main.lex"
 lineno++;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 141 "src/main.lex"
+#line 232 "src/main.lex"
 {
     cerr << "[line "<< lineno <<" ] unknown character:" << yytext << endl;
 }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 144 "src/main.lex"
+#line 235 "src/main.lex"
 ECHO;
 	YY_BREAK
-#line 1046 "src/main.lex.yy.cpp"
+#line 1137 "src/main.lex.yy.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2010,5 +2101,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 144 "src/main.lex"
+#line 235 "src/main.lex"
 

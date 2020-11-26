@@ -15,26 +15,30 @@
 
 %token LPAREN RPAREN LBRACE RBRACE COMMA POS
 
-%token RELOP
 %token MOD
 %token PLUS MINUS
-%token STAR DIV
+%token MULT DIV
 %token AND OR 
 %token NOT 
+%token DMINUS DPLUS
+%token RELOP
 
 %token IDENTIFIER INTEGER CHAR BOOL STRING
 
 %token SEMICOLON
 
-%left RELOP
-%left MOD
-%left PLUS MINUS
-%left STAR DIV
+%left LOP_ASSIGN
 %left AND OR
-%left NOT
-%left DMINUS DPLUS
+%left RELOP
+%left PLUS MINUS
+%left MOD
+%left MULT DIV
 
+%right NOT
+%right POS
+%right UDMINUS UDPLUS
 %right UMINUS
+%left DMINUS DPLUS
 
 %%
 
@@ -103,11 +107,9 @@ params
 
 ASSIGN_stmt
 : IDENTIFIER LOP_ASSIGN expr SEMICOLON {
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_ASSIGN;
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
 ;
 
@@ -206,60 +208,56 @@ scanf_stmt
 
 expr
 : expr MOD expr {
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    // TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
+    // node->addChild($1);
+    // node->addChild($3);
+    // $$ = node;
 }
 | expr PLUS expr {
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
 | expr MINUS expr{
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
-| expr STAR expr{
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+| expr MULT expr{
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
 | expr DIV expr{
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
 | expr AND expr{
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
 | expr OR expr{
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
 | expr RELOP expr{
-    TreeNode* node = new TreeNode($1->lineno, NODE_EXPR);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
 }
-| DPLUS expr {$$ = $2;}
-| expr DPLUS {$$ = $1;}
-| DMINUS expr {$$ = $2;}
-| expr DMINUS {$$ = $1;}
-| NOT expr {$$ = $2;}
-| MINUS expr %prec UMINUS { $$ = $2;}
-| LPAREN expr RPAREN {$$ = $2;}
+| DPLUS expr %prec UDPLUS {$$ = $1; $$->addChild($2);}
+| expr DPLUS {$$ = $1; $$->addChild($2);}
+| DMINUS expr %prec UDMINUS{$$ = $1; $$->addChild($2);}
+| expr DMINUS {$$ = $1; $$->addChild($2);}
+| NOT expr {$$ = $1; $$->addChild($2);}
+| MINUS expr %prec UMINUS { $$ = $1; $$->addChild($2);}
+| LPAREN expr RPAREN {$$ = $1; $$->addChild($2);}
 | term {$$ = $1;}
 ;
 
