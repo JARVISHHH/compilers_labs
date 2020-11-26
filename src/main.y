@@ -27,6 +27,8 @@
 
 %token SEMICOLON
 
+%left COMMA
+
 %left LOP_ASSIGN
 %left AND OR
 %left RELOP
@@ -38,6 +40,7 @@
 %right POS
 %right UDMINUS UDPLUS
 %right UMINUS
+%right POINTER
 %left DMINUS DPLUS
 
 %%
@@ -56,7 +59,7 @@ statement
 | while_stmt {$$ = $1;}
 | for_stmt {$$ = $1;}
 | if_else_stmt {$$ = $1;}
-| ASSIGN_stmt {$$ = $1;}
+| ASSIGN_stmt SEMICOLON {$$ = $1;}
 | RETURN_stmt SEMICOLON {$$ = $1;}
 | declaration SEMICOLON {$$ = $1;}
 | printf_stmt SEMICOLON {$$ = $1;}
@@ -106,7 +109,7 @@ params
 ;
 
 ASSIGN_stmt
-: IDENTIFIER LOP_ASSIGN expr SEMICOLON {
+: IDENTIFIER LOP_ASSIGN expr {
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
@@ -121,7 +124,7 @@ RETURN_stmt
 ;
 
 declaration
-: T id_list { // declare and init
+: T declare_id_list { // declare and init
     TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
     node->stype = STMT_DECL;
     node->addChild($1);
@@ -192,7 +195,7 @@ printf_stmt
     $$ = $1;
     $$->addChild($3);
 }
-| PRINTF LPAREN STRING COMMA id_list RPAREN {
+| PRINTF LPAREN STRING COMMA printf_id_list RPAREN {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
@@ -200,7 +203,7 @@ printf_stmt
 ;
 
 scanf_stmt
-: SCANF LPAREN STRING COMMA id_list RPAREN {
+: SCANF LPAREN STRING COMMA scanf_id_list RPAREN {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
@@ -276,25 +279,23 @@ term
 }
 ;
 
-id_list
-: expr {$$ = $1;}
-| POS expr {$$ = $2;} 
-| IDENTIFIER LOP_ASSIGN expr {
-    TreeNode* node = new TreeNode($1->lineno, NODE_INIT);
-    node->addChild($1);
-    node->addChild($3);
-    $$ = node;
-}
-| id_list COMMA expr {$$ = $1; $$->addSibling($3);}
-| id_list COMMA IDENTIFIER LOP_ASSIGN expr {
-    $$ = $1;
-    TreeNode* node = new TreeNode($3->lineno, NODE_INIT);
-    node->addChild($3);
-    node->addChild($5);
-    $$->addSibling(node);
-}
+declare_id_list
+: ASSIGN_stmt {$$ = $1;}
+| MULT IDENTIFIER %prec POINTER {$$ = $2;}
+| IDENTIFIER {$$ = $1;}
+| declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
+printf_id_list
+: expr {$$ = $1;}
+| printf_id_list COMMA printf_id_list {$$ = $1; $$->addSibling($3);}
+;
+
+scanf_id_list
+: IDENTIFIER {$$ = $1;}
+| POS IDENTIFIER {$$ = $1;}
+| scanf_id_list COMMA scanf_id_list {$$ = $1; $$->addSibling($3);}
+;
 
 T: T_INT {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_INT;} 
 | T_CHAR {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_CHAR;}
