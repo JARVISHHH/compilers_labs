@@ -18,7 +18,8 @@ enum NodeType
 
     NODE_STMT,
     NODE_PROG,
-    NODE_FUNC
+    NODE_FUNC,
+    NODE_LIST
 };
 
 // 操作数类型

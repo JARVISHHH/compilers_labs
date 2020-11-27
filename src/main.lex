@@ -12,6 +12,8 @@ ELSE            else
 RETURN          return
 PRINTF          printf
 SCANF           scanf
+TRUE            true
+FALSE           false
 
 BLOCKCOMMENT \/\*([^\*^\/]*|[\*^\/*]*|[^\**\/]*)*\*\/
 LINECOMMENT \/\/[^\n]*
@@ -214,6 +216,22 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     node->int_val = atoi(yytext);
     yylval = node;
     return INTEGER;
+}
+
+{TRUE} {
+    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+    node->type = TYPE_BOOL;
+    node->b_val = 1;
+    yylval = node;
+    return TRUE;
+}
+
+{FALSE} {
+    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+    node->type = TYPE_BOOL;
+    node->b_val = 0;
+    yylval = node;
+    return FALSE;
 }
 
 {CHAR} {

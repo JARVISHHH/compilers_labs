@@ -125,10 +125,13 @@ void TreeNode::printConstValue() {
             cout << "value: " << this->int_val << '\t';
             break;
         case VALUE_CHAR:
-            cout << "value:" << this->ch_val << '\t';
+            cout << "value: " << this->ch_val << '\t';
             break;
         case VALUE_STRING:
-            cout << "value:" << this->str_val << '\t';
+            cout << "value: " << this->str_val << '\t';
+            break;
+        case VALUE_BOOL:
+            cout << "value: " << this->b_val << '\t';
             break;
         default:
             break;
@@ -268,6 +271,8 @@ string TreeNode::nodeType2String (NodeType type){
         return "parameters";
     case NODE_OP:
         return "operation";
+    case NODE_LIST:
+        return "list";
     default:
         break;
     }

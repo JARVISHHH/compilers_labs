@@ -11,7 +11,7 @@
 
 %token LOP_ASSIGN
 
-%token WHILE FOR IF ELSE RETURN PRINTF SCANF
+%token WHILE FOR IF ELSE RETURN PRINTF SCANF TRUE FALSE
 
 %token LPAREN RPAREN LBRACE RBRACE COMMA POS
 
@@ -92,17 +92,23 @@ function
     }
     node->addChild($1);
     node->addChild($2);
-    node->addChild($4);
-    node->addChild($7);
+    TreeNode* child3 = new TreeNode($4->lineno, NODE_LIST);
+    TreeNode* child4 = new TreeNode($7->lineno, NODE_LIST);
+    child3->addChild($4);
+    child4->addChild($7);
+    node->addChild(child3);
+    node->addChild(child4);
     $$ = node;
 }
 | T IDENTIFIER LPAREN RPAREN LBRACE statements RBRACE {
     TreeNode* node = new TreeNode($1->lineno, NODE_FUNC);
     node->type = new Type(COMPOSE_FUNCTION);
     node->type->addRet($1->type);
+    TreeNode* child3 = new TreeNode($6->lineno, NODE_LIST);
+    child3->addChild($6);
     node->addChild($1);
     node->addChild($2);
-    node->addChild($6);
+    node->addChild(child3);
     $$ = node;
 }
 ;
@@ -148,7 +154,9 @@ declaration
     TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
     node->stype = STMT_DECL;
     node->addChild($1);
-    node->addChild($2);
+    TreeNode* child2 = new TreeNode($2->lineno, NODE_LIST);
+    child2->addChild($2);
+    node->addChild(child2);
     $$ = node;   
 }
 ;
@@ -162,7 +170,9 @@ while_stmt
 | WHILE LPAREN expr RPAREN LBRACE statements RBRACE {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($6);
+    TreeNode* child2 = new TreeNode($6->lineno, NODE_LIST);
+    child2->addChild($6);
+    $$->addChild(child2);
 }
 ;
 
@@ -186,14 +196,32 @@ for_stmt
     $$->addChild($3);
     $$->addChild($5);
     $$->addChild($7);
-    $$->addChild($10);
+    TreeNode* child4 = new TreeNode($10->lineno, NODE_LIST);
+    child4->addChild($10);
+    $$->addChild(child4);
 }
 | FOR LPAREN declaration SEMICOLON expr SEMICOLON expr RPAREN LBRACE statements RBRACE {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
     $$->addChild($7);
-    $$->addChild($10);
+    TreeNode* child4 = new TreeNode($10->lineno, NODE_LIST);
+    child4->addChild($10);
+    $$->addChild(child4);
+}
+| FOR LPAREN SEMICOLON expr SEMICOLON expr RPAREN statement {
+    $$ = $1;
+    $$->addChild($4);
+    $$->addChild($6);
+    $$->addChild($8);
+}
+| FOR LPAREN SEMICOLON expr SEMICOLON expr RPAREN LBRACE statements RBRACE {
+    $$ = $1;
+    $$->addChild($4);
+    $$->addChild($6);
+    TreeNode* child3 = new TreeNode($9->lineno, NODE_LIST);
+    child3->addChild($9);
+    $$->addChild(child3);
 }
 ;
 
@@ -209,7 +237,9 @@ matched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE matched_stmt {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($6);
+    TreeNode* child2 = new TreeNode($6->lineno, NODE_LIST);
+    child2->addChild($6);
+    $$->addChild(child2);
     $$->addSibling($8);
     $8->addChild($9);
 }
@@ -223,7 +253,9 @@ matched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($6);
+    TreeNode* child2 = new TreeNode($6->lineno, NODE_LIST);
+    child2->addChild($6);
+    $$->addChild(child2);
     $$->addSibling($8);
     $8->addChild($10);
 }
@@ -240,7 +272,9 @@ unmatched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE unmatched_stmt {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($6);
+    TreeNode* child2 = new TreeNode($6->lineno, NODE_LIST);
+    child2->addChild($6);
+    $$->addChild(child2);
     $$->addSibling($8);
     $8->addChild($9);
 }
@@ -252,7 +286,9 @@ unmatched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE %prec IFX {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($6);
+    TreeNode* child2 = new TreeNode($6->lineno, NODE_LIST);
+    child2->addChild($6);
+    $$->addChild(child2);
 }
 ;
 
@@ -261,10 +297,12 @@ printf_stmt
     $$ = $1;
     $$->addChild($3);
 }
-| PRINTF LPAREN STRING COMMA printf_id_list RPAREN {
+| PRINTF LPAREN STRING COMMA expr_id_list RPAREN {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($5);
+    TreeNode* child2 = new TreeNode($5->lineno, NODE_LIST);
+    child2->addChild($5);
+    $$->addChild(child2);
 }
 ;
 
@@ -272,7 +310,9 @@ scanf_stmt
 : SCANF LPAREN STRING COMMA scanf_id_list RPAREN {
     $$ = $1;
     $$->addChild($3);
-    $$->addChild($5);
+    TreeNode* child2 = new TreeNode($5->lineno, NODE_LIST);
+    child2->addChild($5);
+    $$->addChild(child2);
 }
 
 expr
@@ -330,6 +370,13 @@ term
 : IDENTIFIER {
     $$ = $1;
 }
+| IDENTIFIER LPAREN expr_id_list RPAREN {
+    $$ = $1;
+    $$->nodeType = NODE_FUNC;
+    TreeNode* child1 = new TreeNode($3->lineno, NODE_LIST);
+    child1->addChild($3);
+    $$->addChild(child1);
+}
 | CONST {
     $$ = $1;
 }
@@ -345,6 +392,12 @@ CONST
 | STRING {
     $$ = $1;
 }
+| TRUE {
+    $$ = $1;
+}
+| FALSE {
+    $$ = $1;
+}
 ;
 
 declare_id_list
@@ -354,9 +407,9 @@ declare_id_list
 | declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
-printf_id_list
+expr_id_list
 : expr {$$ = $1;}
-| printf_id_list COMMA printf_id_list {$$ = $1; $$->addSibling($3);}
+| expr_id_list COMMA expr_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
 scanf_id_list
