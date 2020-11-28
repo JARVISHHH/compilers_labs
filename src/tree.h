@@ -10,11 +10,12 @@ enum NodeType
 {
     NODE_CONST,  // 常量
     NODE_VAR,  // 变量
+    NODE_CONST_VAR, 
     NODE_EXPR,  // 表达式
     NODE_TYPE,  // 类型
     NODE_INIT,  // 初始化
     NODE_PARAM, 
-    NODE_OP,  // 操作符
+    NODE_ARRAY,  // 数组
 
     NODE_STMT,
     NODE_PROG,
@@ -25,6 +26,8 @@ enum NodeType
 // 操作数类型
 enum OperatorType
 {
+    OP_DOT,  // .
+    OP_ARROW,  // ->
     OP_PLUS,  // +
     OP_MINUS,  // -
     OP_MULT,  // *
@@ -44,10 +47,12 @@ enum OperatorType
     OP_EQ,  // ==
     OP_NEQ,  // !=
     OP_P,  // ()
+    OP_BRCKET, // []
     OP_DPLUS,  // ++
     OP_DMINUS,  // --
     OP_MOD,  // %
     OP_POS,  // &
+    OP_COMMA,  // ,
 };
 
 // 语句类型

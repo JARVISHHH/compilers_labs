@@ -56,13 +56,16 @@ void TreeNode::printNodeInfo() {
 
     // 输出附加信息
     // 如果是常量或类型，输出类型
-    if(this->nodeType == NODE_CONST || this->nodeType == NODE_TYPE)
+    if(this->nodeType == NODE_CONST || this->nodeType == NODE_TYPE )
         cout << "type: " << this->type->getTypeInfo() << '\t';
     // 如果是变量，输出变量名
-    else if(this->nodeType == NODE_VAR)
+    else if(this->nodeType == NODE_VAR )
         cout << "varname: " << this->var_name << '\t';
-    else if(this->nodeType == NODE_OP)
-        cout << "op: " << this->getOP() << '\t';
+    else if(this->nodeType == NODE_CONST_VAR)
+    {
+        cout << "type: " << this->type->getTypeInfo() << '\t';
+        cout << "varname: " << this->var_name << '\t';
+    }
     this->printConstValue();
     this->printOP();
     // 如果有孩子就输出孩子
@@ -118,7 +121,7 @@ void TreeNode::printAST() {
 }
 
 void TreeNode::printConstValue() {
-    if(this->nodeType != NODE_CONST)
+    if(this->nodeType != NODE_CONST && this->nodeType != NODE_CONST_VAR)
         return;
     switch(this->type->type) {
         case VALUE_INT:
@@ -142,7 +145,8 @@ void TreeNode::printConstValue() {
 void TreeNode::printOP() {
     string op = this->getOP();
     if(op == "unknown op") return;
-    if(this->nodeType != NODE_EXPR && !(this->nodeType == NODE_STMT && this->stype == STMT_ASSIGN)) return;
+    if(this->nodeType != NODE_EXPR && !(this->nodeType == NODE_STMT && this->stype == STMT_ASSIGN) && this->nodeType != NODE_ARRAY) 
+        return;
     cout << "op: " << op << '\t';
     return;
 }
@@ -150,6 +154,10 @@ void TreeNode::printOP() {
 string TreeNode::getOP() {
     switch (optype)
     {
+    case OP_DOT:
+        return ".";
+    case OP_ARROW:
+        return "->";
     case OP_PLUS:
         return "+";
     case OP_MINUS:
@@ -188,6 +196,8 @@ string TreeNode::getOP() {
         return "!=";
     case OP_P:
         return "()";
+    case OP_BRCKET:
+        return "[]";
     case OP_DPLUS:
         return "++";
     case OP_DMINUS:
@@ -196,6 +206,8 @@ string TreeNode::getOP() {
         return "%";
     case OP_POS:
         return "&";
+    case OP_COMMA:
+        return ",";
     default:
         return "unknown op";
     }
@@ -255,6 +267,8 @@ string TreeNode::nodeType2String (NodeType type){
         return "const";
     case NODE_VAR:
         return "variable";
+    case NODE_CONST_VAR:
+        return "const variable";
     case NODE_EXPR:
         return "expression";
     case NODE_TYPE:
@@ -269,10 +283,10 @@ string TreeNode::nodeType2String (NodeType type){
         return "function";
     case NODE_PARAM:
         return "parameters";
-    case NODE_OP:
-        return "operation";
     case NODE_LIST:
         return "list";
+    case NODE_ARRAY:
+        return "array";
     default:
         break;
     }

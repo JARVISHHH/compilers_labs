@@ -17,6 +17,8 @@ string Type::getTypeInfo() {
             return "string";
         case VALUE_VOID:
             return "void";
+        case COMPOSE_STRUCT:
+            return "struct";
         default:
             cerr << "shouldn't reach here, typeinfo";
             assert(0);
