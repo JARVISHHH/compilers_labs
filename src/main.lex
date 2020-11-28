@@ -14,6 +14,8 @@ PRINTF          printf
 SCANF           scanf
 TRUE            true
 FALSE           false
+STRUCT          struct
+the_CONST       const
 
 BLOCKCOMMENT \/\*([^\*^\/]*|[\*^\/*]*|[^\**\/]*)*\*\/
 LINECOMMENT \/\/[^\n]*
@@ -54,6 +56,14 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return DMINUS;
 }
 
+"[" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_BRCKET;
+    yylval = node;
+    return LBRACKET;
+}
+"]" return RBRACKET;
+
 "(" {
     TreeNode* node = new TreeNode(lineno, NODE_EXPR);
     node->optype = OP_P;
@@ -63,7 +73,12 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 ")" return RPAREN;
 "{" return LBRACE;
 "}" return RBRACE;
-"," return COMMA;
+"," {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_COMMA;
+    yylval = node;
+    return COMMA;
+}
 ";" return  SEMICOLON;
 "+" {
     TreeNode* node = new TreeNode(lineno, NODE_EXPR);
@@ -119,6 +134,18 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     yylval = node;
     return MOD;
 }
+"." {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_DOT;
+    yylval = node;
+    return DOT;
+}
+"->" {
+    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+    node->optype = OP_ARROW;
+    yylval = node;
+    return ARROW;
+}
 
 
 {WHILE} {
@@ -169,6 +196,31 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return SCANF;
 }
 
+{the_CONST} return the_CONST;
+
+{TRUE} {
+    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+    node->type = TYPE_BOOL;
+    node->b_val = 1;
+    yylval = node;
+    return TRUE;
+}
+
+{FALSE} {
+    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+    node->type = TYPE_BOOL;
+    node->b_val = 0;
+    yylval = node;
+    return FALSE;
+}
+
+{STRUCT} {
+    TreeNode* node = new TreeNode(lineno, NODE_TYPE);
+    node->type = new Type(COMPOSE_STRUCT);
+    yylval = node;
+    return STRUCT;
+}
+
 {ASSIGN} {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
@@ -216,22 +268,6 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     node->int_val = atoi(yytext);
     yylval = node;
     return INTEGER;
-}
-
-{TRUE} {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
-    node->type = TYPE_BOOL;
-    node->b_val = 1;
-    yylval = node;
-    return TRUE;
-}
-
-{FALSE} {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
-    node->type = TYPE_BOOL;
-    node->b_val = 0;
-    yylval = node;
-    return FALSE;
 }
 
 {CHAR} {

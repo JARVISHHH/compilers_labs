@@ -227,74 +227,7 @@ RETURN_stmt
 ;
 
 declaration
-: T ASSIGN_stmt declare_id_list { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($2->lineno, NODE_LIST);
-    child2->addChild($2);
-    $2->addSibling($3);
-    node->addChild(child2);
-    $$ = node;   
-}
-| T MULT IDENTIFIER declare_id_list %prec POINTER { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($3->lineno, NODE_LIST);
-    child2->addChild($3);
-    node->addChild(child2);
-    $3->addSibling($4);
-    $$ = node;   
-}
-| T IDENTIFIER declare_id_list { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($2->lineno, NODE_LIST);
-    child2->addChild($2);
-    $2->addSibling($3);
-    node->addChild(child2);
-    $$ = node;  
-}
-| T ARRAY declare_id_list { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($2->lineno, NODE_LIST);
-    child2->addChild($2);
-    $2->addSibling($3);
-    node->addChild(child2);
-    $$ = node; 
-}
-|  T ASSIGN_stmt %prec AFTER_COMMA { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($2->lineno, NODE_LIST);
-    child2->addChild($2);
-    node->addChild(child2);
-    $$ = node;   
-}
-| T MULT IDENTIFIER %prec AFTER_COMMA { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($3->lineno, NODE_LIST);
-    child2->addChild($3);
-    node->addChild(child2);
-    $$ = node;   
-}
-| T IDENTIFIER %prec AFTER_COMMA { // declare and init
-    TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    node->addChild($1);
-    TreeNode* child2 = new TreeNode($2->lineno, NODE_LIST);
-    child2->addChild($2);
-    node->addChild(child2);
-    $$ = node;  
-}
-| T ARRAY %prec AFTER_COMMA { // declare and init
+: T declare_id_list { // declare and init
     TreeNode* node = new TreeNode($1->lineno, NODE_STMT);
     node->stype = STMT_DECL;
     node->addChild($1);
@@ -303,47 +236,9 @@ declaration
     node->addChild(child2);
     $$ = node; 
 }
-| the_CONST T ASSIGN_stmt must_init_declare_id_list {
+| the_CONST T must_init_declare_id_list {
     TreeNode* node = new TreeNode($2->lineno, NODE_STMT);
     node->stype = STMT_DECL;
-    // node->addChild($1);
-    node->addChild($2);
-    TreeNode* child3 = new TreeNode($3->lineno, NODE_LIST);
-    child3->addChild($3);
-    node->addChild(child3);
-    $3->addSibling($4);
-    TreeNode* child = $3;
-    while(child != nullptr)
-    {
-        if(child->child->nodeType == NODE_VAR)
-        {
-            child->child->nodeType = NODE_CONST_VAR;
-            child->child->type = $2->type;
-            switch($2->type->type) {
-                case VALUE_INT:
-                    child->child->int_val = child->child->sibling->int_val;
-                    break;
-                case VALUE_CHAR:
-                    child->child->ch_val = child->child->sibling->ch_val;
-                    break;
-                case VALUE_STRING:
-                    child->child->str_val = child->child->sibling->str_val;
-                    break;
-                case VALUE_BOOL:
-                    child->child->b_val = child->child->sibling->b_val;
-                    break;
-                default:
-                    break;
-            }
-        }
-        child = child->sibling;
-    }
-    $$ = node;
-}
-| the_CONST T ASSIGN_stmt %prec AFTER_COMMA {
-    TreeNode* node = new TreeNode($2->lineno, NODE_STMT);
-    node->stype = STMT_DECL;
-    // node->addChild($1);
     node->addChild($2);
     TreeNode* child3 = new TreeNode($3->lineno, NODE_LIST);
     child3->addChild($3);
@@ -379,20 +274,21 @@ declaration
 ;
 
 declare_id_list
-: COMMA ASSIGN_stmt {$$ = $2; $$->nodeType = NODE_INIT;}
-| COMMA MULT IDENTIFIER %prec POINTER {$$ = $3;}
-| COMMA IDENTIFIER %prec BIGGEST{$$ = $2;}
-| COMMA ARRAY {$$ = $2;}
-| declare_id_list declare_id_list %prec BEFORE_COMMA{$$ = $1; $$->addSibling($2);}
+: ASSIGN_stmt {$$ = $1; $$->nodeType = NODE_INIT;}
+| MULT IDENTIFIER %prec POINTER {$$ = $2;}
+| IDENTIFIER {$$ = $1;}
+| ARRAY {$$ = $1;}
+| declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
 must_init_declare_id_list
-: COMMA ASSIGN_stmt {
-    $$ = $2;
-}
-| must_init_declare_id_list must_init_declare_id_list %prec BEFORE_COMMA {
+: ASSIGN_stmt {
     $$ = $1;
-    $$->addSibling($2);
+    $$->nodeType = NODE_INIT;
+}
+| must_init_declare_id_list COMMA must_init_declare_id_list {
+    $$ = $1;
+    $$->addSibling($3);
 }
 ;
 

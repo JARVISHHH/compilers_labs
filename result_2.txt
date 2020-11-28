@@ -1,0 +1,171 @@
+lno@0	@0	program	children: [@1 @18 @24 ]	
+
+lno@2	@1	type	type: struct	children: [@2 @3 @14 ]	
+lno@2	@2	variable	varname: Matrix	
+
+lno@3	@3	list	children: [@4 @7 ]	
+lno@3	@4	type	type: int	children: [@5 ]	
+lno@3	@5	list	children: [@6 ]	
+lno@3	@6	variable	varname: id	
+
+lno@4	@7	type	type: int	children: [@8 ]	
+lno@4	@8	list	children: [@9 ]	
+lno@4	@9	variable	varname: arr	children: [@10 @12 ]	
+lno@4	@10	array	op: []	children: [@11 ]	
+lno@4	@11	const	type: int	value: 10	
+lno@4	@12	array	op: []	children: [@13 ]	
+lno@4	@13	const	type: int	value: 10	
+
+lno@5	@14	list	children: [@15 @16 @17 ]	
+lno@5	@15	variable	varname: m1	
+lno@5	@16	variable	varname: m2	
+lno@5	@17	variable	varname: m3	
+
+lno@6	@18	statement	children: [@19 @20 ]	decl	
+lno@6	@19	type	type: int	
+lno@6	@20	list	children: [@21 ]	
+lno@6	@21	initiation	children: [@22 @23 ]	
+lno@6	@22	const variable	type: int	varname: len	value: 10	
+lno@6	@23	const	type: int	value: 10	
+
+lno@7	@24	function	children: [@25 @26 @27 ]	
+lno@7	@25	type	type: void	
+lno@7	@26	variable	varname: main	
+
+lno@8	@27	list	children: [@28 @45 @112 ]	
+lno@8	@28	expression	op: ,	children: [@29 @40 ]	
+lno@8	@29	expression	op: ,	children: [@30 @35 ]	
+lno@8	@30	statement	op: =	children: [@31 @34 ]	assign	
+lno@8	@31	expression	op: .	children: [@32 @33 ]	
+lno@8	@32	variable	varname: m1	
+lno@8	@33	variable	varname: id	
+lno@8	@34	const	type: int	value: 1	
+lno@8	@35	statement	op: =	children: [@36 @39 ]	assign	
+lno@8	@36	expression	op: .	children: [@37 @38 ]	
+lno@8	@37	variable	varname: m2	
+lno@8	@38	variable	varname: id	
+lno@8	@39	const	type: int	value: 2	
+lno@8	@40	statement	op: =	children: [@41 @44 ]	assign	
+lno@8	@41	expression	op: .	children: [@42 @43 ]	
+lno@8	@42	variable	varname: m3	
+lno@8	@43	variable	varname: id	
+lno@8	@44	const	type: int	value: 3	
+
+lno@9	@45	statement	children: [@46 @52 @55 @57 ]	for	
+lno@9	@46	statement	children: [@47 @48 ]	decl	
+lno@9	@47	type	type: int	
+lno@9	@48	list	children: [@49 ]	
+lno@9	@49	initiation	children: [@50 @51 ]	
+lno@9	@50	variable	varname: i	
+lno@9	@51	const	type: int	value: 0	
+lno@9	@52	expression	op: <	children: [@53 @54 ]	
+lno@9	@53	variable	varname: i	
+lno@9	@54	variable	varname: len	
+lno@9	@55	expression	op: ++	children: [@56 ]	
+lno@9	@56	variable	varname: i	
+
+lno@10	@57	list	children: [@58 ]	
+lno@10	@58	statement	children: [@59 @65 @68 @70 ]	for	
+lno@10	@59	statement	children: [@60 @61 ]	decl	
+lno@10	@60	type	type: int	
+lno@10	@61	list	children: [@62 ]	
+lno@10	@62	initiation	children: [@63 @64 ]	
+lno@10	@63	variable	varname: j	
+lno@10	@64	const	type: int	value: 0	
+lno@10	@65	expression	op: <	children: [@66 @67 ]	
+lno@10	@66	variable	varname: j	
+lno@10	@67	variable	varname: len	
+lno@10	@68	expression	op: ++	children: [@69 ]	
+lno@10	@69	variable	varname: j	
+
+lno@11	@70	list	children: [@71 @80 @89 ]	
+lno@11	@71	statement	op: =	children: [@72 @79 ]	assign	
+lno@11	@72	expression	op: []	children: [@73 @78 ]	
+lno@11	@73	expression	op: []	children: [@74 @77 ]	
+lno@11	@74	expression	op: .	children: [@75 @76 ]	
+lno@11	@75	variable	varname: m1	
+lno@11	@76	variable	varname: arr	
+lno@11	@77	variable	varname: i	
+lno@11	@78	variable	varname: j	
+lno@11	@79	variable	varname: i	
+
+lno@12	@80	statement	op: =	children: [@81 @88 ]	assign	
+lno@12	@81	expression	op: []	children: [@82 @87 ]	
+lno@12	@82	expression	op: []	children: [@83 @86 ]	
+lno@12	@83	expression	op: .	children: [@84 @85 ]	
+lno@12	@84	variable	varname: m2	
+lno@12	@85	variable	varname: arr	
+lno@12	@86	variable	varname: i	
+lno@12	@87	variable	varname: j	
+lno@12	@88	variable	varname: j	
+
+lno@13	@89	statement	op: =	children: [@90 @97 ]	assign	
+lno@13	@90	expression	op: []	children: [@91 @96 ]	
+lno@13	@91	expression	op: []	children: [@92 @95 ]	
+lno@13	@92	expression	op: .	children: [@93 @94 ]	
+lno@13	@93	variable	varname: m3	
+lno@13	@94	variable	varname: arr	
+lno@13	@95	variable	varname: i	
+lno@13	@96	variable	varname: j	
+lno@13	@97	expression	op: +	children: [@98 @105 ]	
+lno@13	@98	expression	op: []	children: [@99 @104 ]	
+lno@13	@99	expression	op: []	children: [@100 @103 ]	
+lno@13	@100	expression	op: .	children: [@101 @102 ]	
+lno@13	@101	variable	varname: m1	
+lno@13	@102	variable	varname: arr	
+lno@13	@103	variable	varname: i	
+lno@13	@104	variable	varname: j	
+lno@13	@105	expression	op: []	children: [@106 @111 ]	
+lno@13	@106	expression	op: []	children: [@107 @110 ]	
+lno@13	@107	expression	op: .	children: [@108 @109 ]	
+lno@13	@108	variable	varname: m2	
+lno@13	@109	variable	varname: arr	
+lno@13	@110	variable	varname: i	
+lno@13	@111	variable	varname: j	
+
+lno@17	@112	statement	children: [@113 @119 @122 @124 ]	for	
+lno@17	@113	statement	children: [@114 @115 ]	decl	
+lno@17	@114	type	type: int	
+lno@17	@115	list	children: [@116 ]	
+lno@17	@116	initiation	children: [@117 @118 ]	
+lno@17	@117	variable	varname: i	
+lno@17	@118	const	type: int	value: 0	
+lno@17	@119	expression	op: <	children: [@120 @121 ]	
+lno@17	@120	variable	varname: i	
+lno@17	@121	variable	varname: len	
+lno@17	@122	expression	op: ++	children: [@123 ]	
+lno@17	@123	variable	varname: i	
+
+lno@18	@124	list	children: [@125 @153 ]	
+lno@18	@125	statement	children: [@126 @132 @135 @137 ]	for	
+lno@18	@126	statement	children: [@127 @128 ]	decl	
+lno@18	@127	type	type: int	
+lno@18	@128	list	children: [@129 ]	
+lno@18	@129	initiation	children: [@130 @131 ]	
+lno@18	@130	variable	varname: j	
+lno@18	@131	const	type: int	value: 0	
+lno@18	@132	expression	op: <	children: [@133 @134 ]	
+lno@18	@133	variable	varname: j	
+lno@18	@134	variable	varname: len	
+lno@18	@135	expression	op: ++	children: [@136 ]	
+lno@18	@136	variable	varname: j	
+
+lno@19	@137	list	children: [@138 ]	
+lno@19	@138	statement	children: [@139 @140 ]	prinf	
+lno@19	@139	const	type: string	value: "<%d>[%d][%d] %d\t"	
+lno@19	@140	list	children: [@141 @144 @145 @146 ]	
+lno@19	@141	expression	op: .	children: [@142 @143 ]	
+lno@19	@142	variable	varname: m3	
+lno@19	@143	variable	varname: id	
+lno@19	@144	variable	varname: i	
+lno@19	@145	variable	varname: j	
+lno@19	@146	expression	op: []	children: [@147 @152 ]	
+lno@19	@147	expression	op: []	children: [@148 @151 ]	
+lno@19	@148	expression	op: .	children: [@149 @150 ]	
+lno@19	@149	variable	varname: m3	
+lno@19	@150	variable	varname: arr	
+lno@19	@151	variable	varname: i	
+lno@19	@152	variable	varname: j	
+
+lno@21	@153	statement	children: [@154 ]	prinf	
+lno@21	@154	const	type: string	value: "\n"	
