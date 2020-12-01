@@ -31,6 +31,7 @@ public:
     scope* find_symbol(string);
     void unmatch_add();
     void match();
+    void match(string, bool);
     void change(string, int);
 };
 

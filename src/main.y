@@ -337,6 +337,17 @@ for_stmt
     $$->addChild($5);
     $$->addChild($7);
     $$->addChild($9);
+    TreeNode* child = $3->child->sibling->child;
+    while(child != nullptr)
+    {
+        string name;
+        if(child->nodeType == NODE_INIT)
+            name = child->child->var_name;
+        else
+            name = child->var_name;
+        Table.match(name, 0);
+        child = child->sibling;
+    }
 }
 | FOR LPAREN ASSIGN_stmt SEMICOLON expr SEMICOLON expr RPAREN LBRACE statements RBRACE {
     $$ = $1;
@@ -355,6 +366,17 @@ for_stmt
     TreeNode* child4 = new TreeNode($10->lineno, NODE_LIST);
     child4->addChild($10);
     $$->addChild(child4);
+    TreeNode* child = $3->child->sibling->child;
+    while(child != nullptr)
+    {
+        string name;
+        if(child->nodeType == NODE_INIT)
+            name = child->child->var_name;
+        else
+            name = child->var_name;
+        Table.match(name, 0);
+        child = child->sibling;
+    }
 }
 | FOR LPAREN SEMICOLON expr SEMICOLON expr RPAREN statement {
     $$ = $1;

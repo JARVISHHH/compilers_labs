@@ -96,6 +96,15 @@ void table::match() {
     }
 }
 
+void table::match(string name, bool del) {
+    if(symbol_table[name].top()->match() < 0)
+    {
+        symbol_table[name].pop();
+        if(del && !symbol_table[name].empty())
+            symbol_table[name].top()->match();
+    }
+}
+
 void table::change(string name, int value) {
     this->symbol_table[name].top()->Id->int_val = value;
     return;
