@@ -105,6 +105,7 @@ public:
     Type* type;  // 变量、类型、表达式结点，有类型。
 
     StmtType stype;  // 表达式的类型
+    bool given = 0;
     // 变量的值
     int int_val;
     char ch_val;
@@ -113,7 +114,7 @@ public:
     string str_val;  // string值
     string var_name;  // 变量名字
 
-    void printConstValue();  // 如果是常量，就输出内容
+    void printValue();  // 如果是常量，就输出内容
     void printOP();  // 打印运算符
     string getOP();  // 获得运算符
 

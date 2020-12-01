@@ -59,14 +59,19 @@ void TreeNode::printNodeInfo() {
     if(this->nodeType == NODE_CONST || this->nodeType == NODE_TYPE )
         cout << "type: " << this->type->getTypeInfo() << '\t';
     // 如果是变量，输出变量名
-    else if(this->nodeType == NODE_VAR )
+    else if(this->nodeType == NODE_VAR)
+    {
         cout << "varname: " << this->var_name << '\t';
+        if(this->given)
+            cout << "value: " << this->int_val << '\t';
+    }
     else if(this->nodeType == NODE_CONST_VAR)
     {
         cout << "type: " << this->type->getTypeInfo() << '\t';
         cout << "varname: " << this->var_name << '\t';
     }
-    this->printConstValue();
+    if(this->nodeType == NODE_CONST || this->nodeType == NODE_CONST_VAR)
+        this->printValue();
     this->printOP();
     // 如果有孩子就输出孩子
     this->printChildrenId();
@@ -120,9 +125,7 @@ void TreeNode::printAST() {
     }
 }
 
-void TreeNode::printConstValue() {
-    if(this->nodeType != NODE_CONST && this->nodeType != NODE_CONST_VAR)
-        return;
+void TreeNode::printValue() {
     switch(this->type->type) {
         case VALUE_INT:
             cout << "value: " << this->int_val << '\t';

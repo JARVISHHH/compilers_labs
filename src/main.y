@@ -3,6 +3,8 @@
     #define YYSTYPE TreeNode *  
     TreeNode* root;
     extern int lineno;
+    extern int un;
+    extern table Table;
     int yylex();
     int yyerror( char const * );
 %}
@@ -216,6 +218,8 @@ ASSIGN_stmt
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    $1->int_val = $3->int_val;
+    $1->given = 1;
 }
 ;
 
@@ -274,9 +278,21 @@ declaration
 ;
 
 declare_id_list
-: ASSIGN_stmt {$$ = $1; $$->nodeType = NODE_INIT;}
-| MULT IDENTIFIER %prec POINTER {$$ = $2;}
-| IDENTIFIER {$$ = $1;}
+: ASSIGN_stmt {
+    if($1->optype != OP_ASSIGN) yyerror("初始化错误");
+    $$ = $1;
+    $$->nodeType = NODE_INIT;
+    $1->child->given = 1;
+    Table.add_symbol($1->child);
+}
+| MULT IDENTIFIER %prec POINTER {
+    $$ = $2;
+    Table.add_symbol($2);
+}
+| IDENTIFIER {
+    $$ = $1;
+    Table.add_symbol($1);
+}
 | ARRAY {$$ = $1;}
 | declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
@@ -448,7 +464,10 @@ scanf_stmt
 
 expr_stmt
 : expr {$$ = $1;}
-| ASSIGN_stmt {$$ = $1;}
+| ASSIGN_stmt {
+    $$ = $1;
+    Table.change($1->child->var_name, $1->child->sibling->int_val);
+}
 | expr_stmt COMMA expr_stmt {
     $$ = $2;
     $$->addChild($1);
@@ -542,7 +561,15 @@ expr
 ;
 
 term
-: IDENTIFIER %prec FXL { $$ = $1;}
+: IDENTIFIER %prec FXL { 
+    scope* this_scope = Table.find_symbol($1->var_name);
+    if(this_scope != nullptr)
+    {    
+        this_scope->copy_to($1);
+        $1->given = 1;
+    }
+    $$ = $1;
+}
 | CONST {$$ = $1;}
 ;
 

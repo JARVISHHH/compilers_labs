@@ -3,6 +3,8 @@
 #include "common.h"
 #include "main.tab.h"  // yacc header
 int lineno = 1;  // 行号
+int un = 0;
+table Table;
 %}
 
 WHILE           while
@@ -71,8 +73,16 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return LPAREN;
 }
 ")" return RPAREN;
-"{" return LBRACE;
-"}" return RBRACE;
+"{" {
+    un += 1;
+    Table.unmatch_add();
+    return LBRACE;
+}
+"}" {
+    un -= 1;
+    Table.match();
+    return RBRACE;
+}
 "," {
     TreeNode* node = new TreeNode(lineno, NODE_EXPR);
     node->optype = OP_COMMA;
