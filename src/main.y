@@ -11,7 +11,7 @@
 
 %token T_CHAR T_INT T_STRING T_BOOL VOID
 
-%token LOP_ASSIGN
+%token EQ_ASSIGN PLUS_ASSIGN SUB_ASSIGN MULT_ASSIGN DIV_ASSIGN
 
 %token WHILE FOR IF ELSE RETURN PRINTF SCANF TRUE FALSE STRUCT the_CONST
 
@@ -37,7 +37,7 @@
 %left COMMA
 %nonassoc BEFORE_COMMA
 
-%right LOP_ASSIGN EQ_ASSIGN
+%right PLUS_ASSIGN SUB_ASSIGN MULT_ASSIGN DIV_ASSIGN EQ_ASSIGN
 %left AND OR
 %left RELOP
 %left PLUS MINUS
@@ -209,10 +209,33 @@ ARRAY
 ;
 
 ASSIGN_stmt
-: expr LOP_ASSIGN expr {
+: expr PLUS_ASSIGN expr {
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    $1->int_val = $1->int_val + $3->int_val;
+    $1->given = 1;
+}
+| expr SUB_ASSIGN expr {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    $1->int_val = $1->int_val - $3->int_val;
+    $1->given = 1;
+}
+| expr MULT_ASSIGN expr {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    $1->int_val = $1->int_val * $3->int_val;
+    $1->given = 1;
+}
+| expr DIV_ASSIGN expr {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    $1->int_val = $1->int_val / $3->int_val;
+    $1->given = 1;
 }
 | expr EQ_ASSIGN expr {
     $$ = $2;
@@ -572,10 +595,29 @@ expr
     child1->addChild($3);
     $$->addChild(child1);
 }
-| DPLUS expr %prec UDPLUS {$$ = $1; $$->addChild($2); $$->int_val = $2->int_val + 1;}
-| expr DPLUS {$$ = $2; $$->addChild($1); $$->int_val = $1->int_val + 1;}
-| DMINUS expr %prec UDMINUS{$$ = $1; $$->addChild($2); $$->int_val = $2->int_val - 1;}
-| expr DMINUS {$$ = $2; $$->addChild($1); $$->int_val = $1->int_val - 1;}
+| DPLUS expr %prec UDPLUS {
+    $$ = $2; $$->addChild($1); 
+    $$->int_val = $2->int_val + 1; 
+    //$2->int_val = $2->int_val + 1;
+}
+| expr DPLUS {
+    $$ = $2; 
+    $$->addChild($1); 
+    $$->int_val = $1->int_val + 1; 
+    //$1->int_val = $1->int_val + 1;
+}
+| DMINUS expr %prec UDMINUS {
+    $$ = $2; 
+    $$->addChild($1); 
+    $$->int_val = $2->int_val - 1; 
+    //$2->int_val = $2->int_val - 1;
+}
+| expr DMINUS {
+    $$ = $2; 
+    $$->addChild($1); 
+    $$->int_val = $1->int_val - 1; 
+    //$1->int_val = $1->int_val - 1;
+}
 | NOT expr {$$ = $1; $$->addChild($2); $$->int_val = !($1->int_val);}
 | MINUS expr %prec UMINUS { $$ = $1; $$->addChild($2); $$->int_val = -($1->int_val);}
 | LPAREN expr_stmt RPAREN {$$ = $1; $$->addChild($2); $$->int_val = $2->int_val;}

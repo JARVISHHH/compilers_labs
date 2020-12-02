@@ -24,7 +24,6 @@ LINECOMMENT \/\/[^\n]*
 EOL	(\r\n|\r|\n)
 WHILTESPACE [[:blank:]]
 
-ASSIGN          [*][=]|[+][=]|[-][=]|[/][=]
 RELOP           [>]|[<]|[>][=]|[<][=]|[=][=]|[!][=]
 
 INTEGER [0-9]+
@@ -231,19 +230,36 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return STRUCT;
 }
 
-{ASSIGN} {
+"+=" {
     TreeNode* node = new TreeNode(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
+    node->optype = OP_PLUSASSIGN;
     yylval = node;
-    if(!memcmp(yytext, "+=", 2))
-        node->optype = OP_PLUSASSIGN;
-    else if(!memcmp(yytext, "-=", 2))
-        node->optype = OP_MINUSASSIGN;
-    else if(!memcmp(yytext, "*=", 2))
-        node->optype = OP_MULASSIGN;
-    else if(!memcmp(yytext, "/=", 2))
-        node->optype = OP_DIVASSIGN;
-    return LOP_ASSIGN;
+    return PLUS_ASSIGN;
+}
+
+"-=" {
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ASSIGN;
+    node->optype = OP_MINUSASSIGN;
+    yylval = node;
+    return SUB_ASSIGN;
+}
+
+"*=" {
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ASSIGN;
+    node->optype = OP_MULASSIGN;
+    yylval = node;
+    return MULT_ASSIGN;
+}
+
+"/=" {
+    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+    node->stype = STMT_ASSIGN;
+    node->optype = OP_DIVASSIGN;
+    yylval = node;
+    return DIV_ASSIGN;
 }
 
 "=" {
