@@ -112,3 +112,12 @@ void table::change(string name, int value) {
     this->symbol_table[name].top()->Id->int_val = value;
     return;
 }
+
+
+function_decl::function_decl(TreeNode* node) {
+    this->Root[node->var_name] = node;
+}
+
+struct_decl::struct_decl(TreeNode* node) {
+    this->Root[node->var_name] = node;
+}

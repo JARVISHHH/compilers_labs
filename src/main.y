@@ -5,6 +5,9 @@
     extern int lineno;
     extern int un;
     extern table Table;
+    // extern function_decl func_list;
+    // extern struct_decl struct_list;
+    extern TreeNode* cur;
     int yylex();
     int yyerror( char const * );
 %}
@@ -201,14 +204,7 @@ ARRAY
     $$->addChild($2);
     $2->addChild($3);
     $2->nodeType = NODE_ARRAY;
-    if($0->optype != OP_COMMA)
-    {
-        $1->type = $0->type;
-    }
-    else
-    {
-        $1->type = $-1->type;
-    }
+    $1->type = cur->type;
 }
 | ARRAY LBRACKET CONST RBRACKET {
     $$ = $1;
@@ -317,45 +313,23 @@ declare_id_list
     $$->nodeType = NODE_INIT;
     $1->child->given = 1;
     Table.add_symbol($1->child);
-    $1->type = $0->type;
-    $1->child->type = $0->type;
+    $1->type = cur->type;
+    $1->child->type = cur->type;
 }
 | MULT IDENTIFIER %prec POINTER {
     $$ = $2;
     Table.add_symbol($2);
-    $2->type = $0->type;
+    $2->type = cur->type;
 }
 | IDENTIFIER {
     $$ = $1;
     Table.add_symbol($1);
-    $1->type = $0->type;
+    $1->type = cur->type;
 }
 | ARRAY {$$ = $1;}
-| declare_id_list COMMA_declare_id_list {$$ = $1; $$->addSibling($2);}
+| declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($2);}
 ;
 
-COMMA_declare_id_list
-: COMMA ASSIGN_stmt {
-    if($2->optype != OP_ASSIGN) yyerror("初始化错误");
-    $$ = $2;
-    $$->nodeType = NODE_INIT;
-    $2->child->given = 1;
-    Table.add_symbol($2->child);
-    $2->type = $0->type;
-    $2->child->type = $0->type;
-}
-| COMMA MULT IDENTIFIER %prec POINTER {
-    $$ = $3;
-    Table.add_symbol($3);
-    $3->type = $0->type;
-}
-| COMMA IDENTIFIER {
-    $$ = $2;
-    Table.add_symbol($2);
-    $2->type = $0->type;
-}
-| COMMA ARRAY {$$ = $2;}
-;
 
 must_init_declare_id_list
 : ASSIGN_stmt {
@@ -691,10 +665,10 @@ expr_list
 }
 ;
 
-T: T_INT {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_INT;} 
-| T_CHAR {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_CHAR;}
-| T_BOOL {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_BOOL;}
-| VOID {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_VOID;}
+T: T_INT {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_INT; cur = $$;} 
+| T_CHAR {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_CHAR; cur = $$;}
+| T_BOOL {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_BOOL; cur = $$;}
+| VOID {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_VOID; cur = $$;}
 ;
 
 

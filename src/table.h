@@ -35,5 +35,18 @@ public:
     void change(string, int);
 };
 
+struct function_decl {
+public:
+    unordered_map<string, TreeNode*> Root;
+
+    function_decl(TreeNode*);
+};
+
+struct struct_decl {
+    unordered_map<string, TreeNode*> Root;
+
+    struct_decl(TreeNode*);
+};
+
 
 #endif

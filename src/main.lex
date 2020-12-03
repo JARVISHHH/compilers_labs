@@ -3,8 +3,11 @@
 #include "common.h"
 #include "main.tab.h"  // yacc header
 int lineno = 1;  // 行号
-int un = 0;
+int un;
 table Table;
+//function_decl func_list;
+//struct_decl struct_list;
+TreeNode* cur;
 %}
 
 WHILE           while
