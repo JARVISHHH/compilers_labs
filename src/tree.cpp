@@ -61,6 +61,7 @@ void TreeNode::printNodeInfo() {
     // 如果是变量，输出变量名
     else if(this->nodeType == NODE_VAR)
     {
+        cout << "type: " << this->type->getTypeInfo() << '\t';
         cout << "varname: " << this->var_name << '\t';
         if(this->given)
             cout << "value: " << this->int_val << '\t';
@@ -68,6 +69,10 @@ void TreeNode::printNodeInfo() {
     else if(this->nodeType == NODE_CONST_VAR)
     {
         cout << "type: " << this->type->getTypeInfo() << '\t';
+        cout << "varname: " << this->var_name << '\t';
+    }
+    else if(this->nodeType == NODE_FUNC_NAME)
+    {
         cout << "varname: " << this->var_name << '\t';
     }
     if(this->nodeType == NODE_CONST || this->nodeType == NODE_CONST_VAR)
@@ -290,6 +295,8 @@ string TreeNode::nodeType2String (NodeType type){
         return "list";
     case NODE_ARRAY:
         return "array";
+    case NODE_FUNC_NAME:
+        return "function name";
     default:
         break;
     }

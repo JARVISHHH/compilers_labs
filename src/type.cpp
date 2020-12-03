@@ -20,8 +20,7 @@ string Type::getTypeInfo() {
         case COMPOSE_STRUCT:
             return "struct";
         default:
-            cerr << "shouldn't reach here, typeinfo";
-            assert(0);
+            return "unknown type";
     }
     return "?";
 }

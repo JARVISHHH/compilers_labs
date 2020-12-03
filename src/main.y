@@ -91,6 +91,7 @@ unmatched_stmt
 
 function
 : T IDENTIFIER LPAREN params RPAREN LBRACE statements RBRACE {
+    $2->nodeType = NODE_FUNC_NAME;
     TreeNode* node = new TreeNode($1->lineno, NODE_FUNC);
     node->type = new Type(COMPOSE_FUNCTION);
     node->type->addRet($1->type);
@@ -111,6 +112,7 @@ function
     $$ = node;
 }
 | T IDENTIFIER LPAREN RPAREN LBRACE statements RBRACE {
+    $2->nodeType = NODE_FUNC_NAME;
     TreeNode* node = new TreeNode($1->lineno, NODE_FUNC);
     node->type = new Type(COMPOSE_FUNCTION);
     node->type->addRet($1->type);
@@ -199,6 +201,14 @@ ARRAY
     $$->addChild($2);
     $2->addChild($3);
     $2->nodeType = NODE_ARRAY;
+    if($0->optype != OP_COMMA)
+    {
+        $1->type = $0->type;
+    }
+    else
+    {
+        $1->type = $-1->type;
+    }
 }
 | ARRAY LBRACKET CONST RBRACKET {
     $$ = $1;
@@ -307,17 +317,44 @@ declare_id_list
     $$->nodeType = NODE_INIT;
     $1->child->given = 1;
     Table.add_symbol($1->child);
+    $1->type = $0->type;
+    $1->child->type = $0->type;
 }
 | MULT IDENTIFIER %prec POINTER {
     $$ = $2;
     Table.add_symbol($2);
+    $2->type = $0->type;
 }
 | IDENTIFIER {
     $$ = $1;
     Table.add_symbol($1);
+    $1->type = $0->type;
 }
 | ARRAY {$$ = $1;}
-| declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
+| declare_id_list COMMA_declare_id_list {$$ = $1; $$->addSibling($2);}
+;
+
+COMMA_declare_id_list
+: COMMA ASSIGN_stmt {
+    if($2->optype != OP_ASSIGN) yyerror("初始化错误");
+    $$ = $2;
+    $$->nodeType = NODE_INIT;
+    $2->child->given = 1;
+    Table.add_symbol($2->child);
+    $2->type = $0->type;
+    $2->child->type = $0->type;
+}
+| COMMA MULT IDENTIFIER %prec POINTER {
+    $$ = $3;
+    Table.add_symbol($3);
+    $3->type = $0->type;
+}
+| COMMA IDENTIFIER {
+    $$ = $2;
+    Table.add_symbol($2);
+    $2->type = $0->type;
+}
+| COMMA ARRAY {$$ = $2;}
 ;
 
 must_init_declare_id_list
@@ -499,7 +536,7 @@ printf_stmt
 ;
 
 scanf_stmt
-: SCANF LPAREN STRING COMMA scanf_id_list RPAREN {
+: SCANF LPAREN STRING COMMA expr_list RPAREN {
     $$ = $1;
     $$->addChild($3);
     TreeNode* child2 = new TreeNode($5->lineno, NODE_LIST);
@@ -618,6 +655,7 @@ expr
     $$->int_val = $1->int_val - 1; 
     //$1->int_val = $1->int_val - 1;
 }
+| POS expr {$$ = $1;$$->addChild($2);}
 | NOT expr {$$ = $1; $$->addChild($2); $$->int_val = !($1->int_val);}
 | MINUS expr %prec UMINUS { $$ = $1; $$->addChild($2); $$->int_val = -($1->int_val);}
 | LPAREN expr_stmt RPAREN {$$ = $1; $$->addChild($2); $$->int_val = $2->int_val;}
@@ -651,12 +689,6 @@ expr_list
     $$ = $1;
     $$->addSibling($3);
 }
-;
-
-scanf_id_list
-: IDENTIFIER {$$ = $1;}
-| POS IDENTIFIER {$$ = $2;}
-| scanf_id_list COMMA scanf_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
 T: T_INT {$$ = new TreeNode(lineno, NODE_TYPE); $$->type = TYPE_INT;} 
