@@ -61,7 +61,7 @@ void TreeNode::printNodeInfo() {
     // 如果是变量，输出变量名
     else if(this->nodeType == NODE_VAR)
     {
-        cout << "type: " << this->type->getTypeInfo() << '\t';
+        //cout << "type: " << this->type->getTypeInfo() << '\t';
         cout << "varname: " << this->var_name << '\t';
         if(this->given)
             cout << "value: " << this->int_val << '\t';

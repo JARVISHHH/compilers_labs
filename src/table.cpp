@@ -21,26 +21,27 @@ int scope::match() {
 void scope::copy_to(TreeNode* child) {
     // 根据类型进行对应内容的赋值
     child->type = this->Id->type;
-    // child->int_val = this->Id->int_val;
+    child->given = this->Id->given;
+    child->int_val = this->Id->int_val;
     // child->b_val = this->Id->b_val;
     // child->str_val = this->Id->str_val;
-    if(this->Id->given)
-        switch (child->type->type)
-        {
-        case VALUE_BOOL:
-            child->b_val = this->Id->b_val;
-            break;
-        case VALUE_CHAR:
-            child->str_val = this->Id->str_val[0];
-            break;
-        case VALUE_INT:
-            child->int_val = this->Id->int_val;
-            break;
-        case VALUE_STRING:
-            child->str_val = this->Id->str_val;
-        default:
-            break;
-        }
+    // if(this->Id->given)
+    //     switch (child->type->type)
+    //     {
+    //     case VALUE_BOOL:
+    //         child->b_val = this->Id->b_val;
+    //         break;
+    //     case VALUE_CHAR:
+    //         child->str_val = this->Id->str_val[0];
+    //         break;
+    //     case VALUE_INT:
+    //         child->int_val = this->Id->int_val;
+    //         break;
+    //     case VALUE_STRING:
+    //         child->str_val = this->Id->str_val;
+    //     default:
+    //         break;
+    //     }
     return;
 }
 
@@ -53,15 +54,15 @@ bool compare::operator() (scope* s1, scope* s2) {
 
 void table::add_symbol(TreeNode* node) {
     all_symbols[node->var_name].push_back(node);
-    // 新建一个新的scope
-    // TreeNode* new_node = new TreeNode(node->lineno, node->nodeType);
-    // new_node->var_name = node->var_name;
-    // // new_node->int_val = node->int_val;
-    // // new_node->b_val = node->b_val;
-    // // new_node->str_val = node->str_val;
-    // // new_node->given = node->given;
-    // new_node->type = node->type;
-    scope* new_scope = new scope(node);
+    //新建一个新的scope
+    TreeNode* new_node = new TreeNode(node->lineno, node->nodeType);
+    new_node->var_name = node->var_name;
+    // new_node->int_val = node->int_val;
+    // new_node->b_val = node->b_val;
+    // new_node->str_val = node->str_val;
+    // new_node->given = node->given;
+    new_node->type = node->type;
+    scope* new_scope = new scope(new_node);
     symbol_table[node->var_name].push(new_scope);
 }
 
@@ -109,7 +110,9 @@ void table::match(string name, bool del) {
 }
 
 void table::change(string name, int value) {
+    if(this->symbol_table[name].empty()) return;
     this->symbol_table[name].top()->Id->int_val = value;
+    this->symbol_table[name].top()->Id->given = 1;
     return;
 }
 

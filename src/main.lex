@@ -3,7 +3,6 @@
 #include "common.h"
 #include "main.tab.h"  // yacc header
 int lineno = 1;  // 行号
-int un;
 table Table;
 //function_decl func_list;
 //struct_decl struct_list;
@@ -76,12 +75,10 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 }
 ")" return RPAREN;
 "{" {
-    un += 1;
     Table.unmatch_add();
     return LBRACE;
 }
 "}" {
-    un -= 1;
     Table.match();
     return RBRACE;
 }

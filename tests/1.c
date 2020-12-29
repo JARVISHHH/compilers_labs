@@ -16,8 +16,8 @@ void main() {
             printf("result is: %d\n", s);
             int b;
             b = 10;
-            for(int i=0; i<b; i++) {
-                printf("Have fun: %d\n", i);
+            for(int i=0; i < b; i++) {
+                printf("Have fun: %d\n", b);
             }
         }
     }

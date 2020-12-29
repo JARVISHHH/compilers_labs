@@ -3,7 +3,6 @@
     #define YYSTYPE TreeNode *  
     TreeNode* root;
     extern int lineno;
-    extern int un;
     extern table Table;
     // extern function_decl func_list;
     // extern struct_decl struct_list;
@@ -41,7 +40,8 @@
 %nonassoc BEFORE_COMMA
 
 %right PLUS_ASSIGN SUB_ASSIGN MULT_ASSIGN DIV_ASSIGN EQ_ASSIGN
-%left AND OR
+%left OR
+%left AND
 %left RELOP
 %left PLUS MINUS
 %left MOD
@@ -132,11 +132,13 @@ params
 : T IDENTIFIER {
     $$ = $1;
     $$->addChild($2);
+    $2->type = cur->type;
 }
 | T IDENTIFIER EQ_ASSIGN CONST {
     $$ = $1;
     $$->addChild($2);
     $$->addChild($4);
+    $2->type = cur->type;
 }
 | params COMMA params {
     $$ = $1;
@@ -181,9 +183,9 @@ members
 ;
 
 no_init_id_list
-: MULT IDENTIFIER %prec POINTER{$$ = $2;}
-| IDENTIFIER {$$ = $1;}
-| ARRAY {$$ = $1;}
+: MULT IDENTIFIER %prec POINTER{$$ = $2; $2->type = cur->type;}
+| IDENTIFIER {$$ = $1; $1->type = cur->type;}
+| ARRAY {$$ = $1; }
 | no_init_id_list COMMA no_init_id_list {
     $$ = $1;
     $$->addSibling($3);
@@ -315,19 +317,22 @@ declare_id_list
     Table.add_symbol($1->child);
     $1->type = cur->type;
     $1->child->type = cur->type;
+    Table.change($1->child->var_name, $1->child->int_val);
 }
 | MULT IDENTIFIER %prec POINTER {
     $$ = $2;
+    $2->given = 0;
     Table.add_symbol($2);
     $2->type = cur->type;
 }
 | IDENTIFIER {
     $$ = $1;
+    $1->given = 0;
     Table.add_symbol($1);
     $1->type = cur->type;
 }
-| ARRAY {$$ = $1;}
-| declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($2);}
+| ARRAY {$$ = $1; $1->given = 0; }
+| declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
 
@@ -642,7 +647,7 @@ term
     if(this_scope != nullptr)
     {    
         this_scope->copy_to($1);
-        $1->given = 1;
+        //cout<<$1->int_val<<endl;
     }
     $$ = $1;
 }
