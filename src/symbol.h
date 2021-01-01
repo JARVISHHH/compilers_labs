@@ -9,6 +9,7 @@ typedef struct TAG_SYMBOL_ENTRY
 {
 	int token;
 	int type;  // 类型
+	
 	int unmatched = 0;  // 未匹配的左括号的个数
 } symbol_entry;
 

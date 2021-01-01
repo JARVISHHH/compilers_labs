@@ -53,7 +53,7 @@ extern int yydebug;
     T_INT = 259,
     T_STRING = 260,
     T_BOOL = 261,
-    VOID = 262,
+    T_VOID = 262,
     EQ_ASSIGN = 263,
     PLUS_ASSIGN = 264,
     SUB_ASSIGN = 265,

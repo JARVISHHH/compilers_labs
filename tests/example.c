@@ -1,11 +1,7 @@
-int main()
+int a;
+// a && 1;
+while (a && 1)
 {
-	int a;
-
-	while (a && 1)
-	{
-		a + 1;
-	}
-
-	return 0;
+	a = a + 1;
+	a = a + 1;
 }

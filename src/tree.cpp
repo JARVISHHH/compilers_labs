@@ -67,32 +67,50 @@ void tree::type_check(Node *t)
 	{
 		switch(t->kind_kind)
 		{
+		case COMP_STMT:
+			for(int i = 0; t->children[i]; i++)
+				type_check(t->children[i]);
+			break;
 		case WHILE_STMT:
+			type_check(t->children[0]);
 			// 如果孩子节点(也就是循环判断语句)不是布尔型的，类型错误
 			if (t->children[0]->type != Boolean)
 			{
 				cerr << "Bad boolean type at line: " << t->lineno << endl;
 			}
 			else
+			{
+				type_check(t->children[1]);
 				return;
+			}
 			break;
 		case FOR_STMT:
+			type_check(t->children[0]);
+			type_check(t->children[1]);
 			// 如果循环判断语句不是布尔型的，类型错误
 			if(t->children[1]->type != Boolean)
 			{
 				cerr << "Bad boolean type at line: " << t->lineno << endl;
 			}
 			else
+			{
+				type_check(t->children[2]);
+				type_check(t->children[3]);
 				return;
+			}
 			break;
 		case IF_STMT:
+			type_check(t->children[0]);
 			// 如果判断语句不是布尔型的，类型错误
 			if(t->children[0]->type != Boolean)
 			{
 				cerr << "Bad boolean type at line: " << t->lineno << endl;
 			}
 			else
+			{
+				type_check(t->children[1]);
 				return;
+			}
 			break;
 		case RETURN_STMT:
 			return;
@@ -100,11 +118,45 @@ void tree::type_check(Node *t)
 			return;
 		case SCAN_STMT:
 			return;
-		case COMP_STMT:
-			return;
-			
-			
-
+		}
+	}
+	else if(t->kind == EXPR_NODE)
+	{
+		if(t->kind_kind == OP_EXPR)
+		{
+			type_check(t->children[0]);
+			if(t->children[1])
+				type_check(t->children[1]);
+			switch(t->attr.op)
+			{
+			case OP_ASSIGN:
+				if(t->children[0]->type != t->children[1]->type)
+					cerr << "Bad type at line: " << t->lineno << endl;
+				t->type = t->children[0]->type;
+				break;
+			case OP_EQ:
+				// if(t->children[0]->type != t->children[1]->type)
+				// 	cerr << "Bad type at line: " << t->lineno << endl;
+				t->type = Boolean;
+				break;
+			case OP_NOT:
+				t->type = Boolean;
+				break;
+			case OP_DPLUS:
+				if(t->children[0]->type != Integer)
+					cerr << "Bad integer type at line: " << t->lineno << endl;
+				t->type = Integer;
+				break;
+			case OP_DMINUS:
+				if(t->children[0]->type != Integer)
+					cerr << "Bad integer type at line: " << t->lineno << endl;
+				t->type = Integer;
+				break;
+			default:
+				if(t->children[0]->type != Integer || (t->children[1] != nullptr && t->children[1]->type != Integer))
+					cerr << "Bad integer type at line: " << t->lineno << endl;
+				// t->type = Integer;
+			}
 		}
 	}
 	/* ... */
@@ -139,8 +191,7 @@ void tree::get_temp_var(Node *t)
 
 // 应该是从下而上建树？
 // 生成新根，从根开始遍历
-Node* tree::NewRoot(int kind, int kind_kind, NodeAttr attr, int type,
-					Node* child, int this_lineno = lineno)
+Node* tree::NewRoot(int kind, int kind_kind, NodeAttr attr, int type, Node* child, int this_lineno)
 				//    Node *child1, Node *child2, Node *child3, Node *child4)
 {
 	Node *t = new Node;  // 创建新的Node
@@ -154,10 +205,6 @@ Node* tree::NewRoot(int kind, int kind_kind, NodeAttr attr, int type,
 		t->kind_kind = kind_kind;
 		t->attr = attr;
 		t->type = type;
-		// t->children[0] = child1;
-		// t->children[1] = child2;
-		// t->children[2] = child3;
-		// t->children[3] = child4;
 		t->addChild(child);
 		t->lineno = this_lineno;
 		t->seq = tree::node_seq++;
@@ -196,7 +243,8 @@ void tree::stmt_get_label(Node *t)
 			Node *last;  // 最后的节点
 			Node *p;  // 临时变量，标识
 			// 跳过所有的声明节点
-			for (p = t->children[0]; p->kind == DECL_NODE; p = p->sibling) ;
+			for (p = t->children[0]; p != nullptr && p->kind == DECL_NODE; p = p->sibling) ;
+			if(p == nullptr) return;
 			// 现在p是语句节点或者表达式节点
 			p->label.begin_label = t->label.begin_label;  // p的开始节点等于t的开始节点（有就有，没有就没有）
 			// 遍历复合语句中的所有节点，获得所有节点的标签
@@ -238,6 +286,29 @@ void tree::stmt_get_label(Node *t)
 			// 递归获得两个孩子的标签
 			recursive_get_label(e);
 			recursive_get_label(s);
+			break;
+		}
+	case IF_STMT:
+		{
+			Node *e = t->children[0];  // 第一个孩子(判断条件)
+			Node *s = t->children[1];  // 第二个孩子(循环体)
+
+			// 新建循环体的开始标签和判断条件的真值标签
+			// s->label.begin_label = e->label.true_label = new_label();
+
+			// 如果循环语句的下一个标签为空，则新建标签
+			if (t->label.next_label == "")
+				t->label.next_label = new_label();
+			// 判断条件为假时，标签为循环语句的下一标签
+			e->label.false_label = t->label.next_label;
+			s->label.next_label = t->label.next_label;  // 循环体作为整体（即循环体全部运行结束后）的下一句就是循环语句的开始
+			// 如果t有兄弟（即还有下一个语句块），那么这个语句块的开始标签就是t的下一个标签
+			if (t->sibling)
+				t->sibling->label.begin_label = t->label.next_label;
+			// 递归获得两个孩子的标签
+			recursive_get_label(e);
+			recursive_get_label(s);
+			break;
 		}
     /* ... */
 	}
@@ -309,16 +380,31 @@ void tree::gen_decl(ostream &out, Node *t)
 	out << "\t.bss" << endl;
 
 	// 遍历t中所有孩子声明节点
-	for (; t->kind == DECL_NODE; t = t->sibling)
+	for (; t != nullptr && t->kind == DECL_NODE; t = t->sibling)
 	{
 		// 遍历节点中的所有孩子
-		for (Node *p = t->children[1]; p; p = p->sibling)
+		for (Node *p = t->children[1]->children[0]; p; p = p->sibling)
 		{
-			// 如果声明的是整型
-			if (p->type == Integer)
-				out << "_" << p->attr.name << p->attr.symtbl_seq << ":" << endl;
-                out << "\t.zero\t4" << endl;
-                out << "\t.align\t4" << endl;
+			if(p->kind_kind == OP_EXPR)
+			{
+				if(p->children[0]->type == Integer)
+				{
+					cout << "_" << p->children[0]->attr.name << p->children[0]->attr.symtbl_seq << ":" << endl;
+					cout << "\t.zero\t4" << endl;
+					cout << "\t.align\t4" << endl;
+				}
+			}
+			else
+			{
+				// 如果声明的是整型
+				if (p->type == Integer)
+				{
+					cout << "_" << p->attr.name << p->attr.symtbl_seq << ":" << endl;
+					cout << "\t.zero\t4" << endl;
+					cout << "\t.align\t4" << endl;
+				}
+			}
+			
 			// ...其它类型的代码...
 		}
 	}
@@ -335,30 +421,38 @@ void tree::gen_decl(ostream &out, Node *t)
 // 生成语句的asm码
 void tree::stmt_gen_code(ostream &out, Node *t)
 {
+
+	if (t->label.begin_label != "")
+		// 输出循环语句的开始标签
+		out << t->label.begin_label << ":" << endl;
 	// 如果是个符复合语句
 	if (t->kind_kind == COMP_STMT)
 	{
+		// if (t->label.begin_label != "")
+		// 	out << t->label.begin_label << ":" << endl;
 		// 遍历所有的孩子节点
 		for (int i = 0; t->children[i]; i++)
 		{
 			// 递归生成当前孩子的代码
 			recursive_gen_code(out, t->children[i]);
-			// 遍历递归生成孩子的节点的代码
-			for (Node *p = t->children[i]->sibling; p; p = p->sibling)
-				recursive_gen_code(out, p);
 		}
 	}
 	// 如果是个while循环语句
 	else if (t->kind_kind == WHILE_STMT)
 	{
-		// 如果循环的开始语句的标签不为空（循环开始的标签可能为0吗？）
 		if (t->label.begin_label != "")
-			// 输出循环语句的开始标签
 			out << t->label.begin_label << ":" << endl;
 		recursive_gen_code(out, t->children[0]);  // 递归生成循环条件的asm码
 		recursive_gen_code(out, t->children[1]);  // 递归生成循环体的asm码
 		// 跳回到循环开始的地方(while...)
 		out << "\tjmp " << t->label.begin_label << endl;
+	}
+	else if (t->kind_kind == IF_STMT)
+	{
+		if (t->label.begin_label != "")
+			out << t->label.begin_label << ":" << endl;
+		recursive_gen_code(out, t->children[0]);  // 递归生成条件的asm码
+		recursive_gen_code(out, t->children[1]);  // 递归生成语句体的asm码
 	}
 	// 如果是个print语句
 	else if (t->kind_kind == PRINT_STMT)
@@ -377,23 +471,27 @@ void tree::expr_gen_code(ostream &out, Node *t)
 	// 如果是赋值
 	if(t->attr.op == OP_ASSIGN)
 	{
+		recursive_gen_code(out, e2);
+		recursive_gen_code(out, e1);
 		out << "\tmovl $";
-		if(e1->kind_kind == ID_EXPR)
+		if(e2->kind_kind == ID_EXPR)
 		{
-			out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+			out << "_" << e2->attr.name << e2->attr.symtbl_seq;
 			out << ", %eax" << endl;
+			out << "\tmovl %eax, $" << endl;
+			out << e1->attr.name << e1->attr.symtbl_seq << endl;
 		}
-		else if(e1->kind_kind == CONST_EXPR)
+		else if(e2->kind_kind == CONST_EXPR)
 		{
-			out << e1->attr.vali;
+			out << e2->attr.vali;
 			out << ", _";
-			out << t->attr.symtbl_seq << endl;
+			out << e1->attr.name << e1->attr.symtbl_seq << endl;
 		}
 		else
 		{
-			out << "t" << e1->temp_var;
+			out << "t" << e2->temp_var;
 			out << ", _";
-			out << t->attr.symtbl_seq << endl;
+			out << e1->attr.name << e1->attr.symtbl_seq << endl;
 		}
 		return;
 	}
@@ -402,6 +500,8 @@ void tree::expr_gen_code(ostream &out, Node *t)
 	{
 	// 加法
 	case OP_PLUS:
+		recursive_gen_code(out, e1);
+		recursive_gen_code(out, e2);
 		// 把运算符1的值先给%eax
 		out << "\tmovl $";
 		// 运算符1的类型的类型是标识符
@@ -434,6 +534,8 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		break;
 	// 减法
 	case OP_MINUS:
+		recursive_gen_code(out, e1);
+		recursive_gen_code(out, e2);
 		// 把运算符1的值先给%eax
 		out << "\tmovl $";
 		// 运算符1的类型的类型是标识符
@@ -466,6 +568,8 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		break;
 	// 乘法
 	case OP_MULT:
+		recursive_gen_code(out, e1);
+		recursive_gen_code(out, e2);
 		// 把运算符1的值先给%eax
 		out << "\tmovl $";
 		// 运算符1的类型的类型是标识符
@@ -498,6 +602,8 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		break;
 	// 除法
 	case OP_DIV:
+		recursive_gen_code(out, e1);
+		recursive_gen_code(out, e2);
 		// 把运算符1的值先给%eax
 		out << "\tmovl $";
 		// 运算符1的类型的类型是标识符
@@ -533,8 +639,73 @@ void tree::expr_gen_code(ostream &out, Node *t)
         out << "\t# your own code of AND operation here" << endl;
         out << "\tjl @1" << endl;
         out << "\t# your asm code of AND operation end" << endl;
+		break;
+	case OP_NOT:
+		recursive_gen_code(out, e1);
+		out << "\tmovl $";
+		// 运算符1的类型的类型是标识符
+		if (e1->kind_kind == ID_EXPR)
+			// 输出标识符的名称
+			out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+		// 如果运算符1的类型的类型是常量
+		else if (e1->kind_kind == CONST_EXPR)
+			// 直接输出数值
+			out << e1->attr.vali;
+		// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
+		else out << "t" << e1->temp_var;
+		out << ", %eax" <<endl;
+
+		out << "\txor $";
+		// 运算符1的类型的类型是标识符
+		if (e1->kind_kind == ID_EXPR)
+			// 输出标识符的名称
+			out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+		// 如果运算符1的类型的类型是常量
+		else if (e1->kind_kind == CONST_EXPR)
+			// 直接输出数值
+			out << e1->attr.vali;
+		// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
+		else out << "t" << e1->temp_var;
+		out << ", %eax" <<endl;
+		out << "\tmovl %eax, $t" << t->temp_var << endl;
+		break;
 	// 大于
 	case OP_L:
+		break;
+	case OP_EQ:
+		recursive_gen_code(out, e1);
+		recursive_gen_code(out, e2);
+		// 把运算符1的值先给%eax
+		out << "\tmovl $";
+		// 运算符1的类型的类型是标识符
+		if (e1->kind_kind == ID_EXPR)
+			// 输出标识符的名称
+			out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+		// 如果运算符1的类型的类型是常量
+		else if (e1->kind_kind == CONST_EXPR)
+			// 直接输出数值
+			out << e1->attr.vali;
+		// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
+		else out << "t" << e1->temp_var;
+		out << ", %eax" <<endl;
+
+		// 做比较
+		out << "\tcmpl $";
+		// 如果运算符2的类型的类型是标识符
+		if (e2->kind_kind == ID_EXPR)
+			// 输出标识符
+			out << "_" << e2->attr.name << e2->attr.symtbl_seq;
+		// 如果是常量
+		else if (e2->kind_kind == CONST_EXPR)
+			// 输出数值
+			out << e2->attr.vali;
+		// 以上情况都不是，就输出临时变量
+		else out << "t" << e2->temp_var;
+		out << ", %eax" << endl;  // 将值赋给%eax
+		// // 把结果给t的临时变量
+		// out << "\tmovl %eax, $t" << t->temp_var << endl;
+		// out << e1->label.next_label << endl;
+		out << "\tjl " << t->label.false_label <<endl;
 		break;
 	default:
 		break;

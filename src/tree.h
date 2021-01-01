@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "symbol.h"
 
+extern int lineno;
 
 // 节点类型
 enum Node_Type
@@ -42,6 +43,9 @@ enum  Decl_Type
 {
 	VAR_DECL = 0,  // 变量声明
 	CONST_DECL,  // 常量声明
+	FUNC_DECL,  // 函数声明
+	STRUCT_DECL,  // 结构声明
+	COMP_DECL
 };
 
 // 列表类型
@@ -170,9 +174,7 @@ private:
 	void expr_gen_code(ostream &out, Node *t);  // 表达式生成asm语句
 
 public:
-	Node *NewRoot(int kind, int kind_kind, NodeAttr attr, int type,
-			Node* child = NULL, int this_lineno = lineno);
-		// Node *child1 = NULL, Node *child2 = NULL, Node *child3 = NULL, Node *child4 = NULL);  // 新建新的根
+	Node *NewRoot(int kind, int kind_kind, NodeAttr attr, int type, Node* child = NULL, int this_lineno = lineno);  // 新建新的根
 	void get_label(void);  // 获得标签（自顶向下）
 	void gen_code(ostream &out);  // 生成代码（自底向上）
 };

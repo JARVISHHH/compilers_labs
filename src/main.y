@@ -4,10 +4,13 @@
     Node* root;
     extern tree parse_tree;
     extern int lineno;
+    extern symbol_table symtbl;
 
     extern  Node* cur;
     int yylex();
     int yyerror( char const * );
+
+    // Node* decl = new Node(0, DECL_NODE, COMP_DECL, *(new NodeAttr), Notype, parse_tree.node_seq++);
 %}
 
 %token T_CHAR T_INT T_STRING T_BOOL T_VOID
@@ -89,14 +92,10 @@ statement
 ;
 
 matched_stmt
-: function {$$ = $1;}
-| struct_decl {$$ = $1;}
-| while_stmt {$$ = $1;}
+: while_stmt {$$ = $1;}
 | for_stmt {$$ = $1;}
 | RETURN_stmt SEMICOLON {$$ = $1;}
 | declaration SEMICOLON {$$ = $1;}
-| printf_stmt SEMICOLON {$$ = $1;}
-| scanf_stmt SEMICOLON {$$ = $1;}
 | expr_stmt SEMICOLON {$$ = $1;}
 | matched_if_stmt {$$ = $1;}
 ;
@@ -105,127 +104,11 @@ unmatched_stmt
 : unmatched_if_stmt {$$ = $1;}
 ;
 
-function
-: T IDENTIFIER LPAREN params RPAREN LBRACE statements RBRACE {
-    $2->nodeType = NODE_FUNC_NAME;
-    Node* node = new Node($1->lineno, NODE_FUNC);
-    node->type = new Type(COMPOSE_FUNCTION);
-    node->type->addRet($1->type);
-    Node* cur = $4;
-    while(cur != nullptr)
-    {
-        node->type->addParam(cur->type);
-        cur = cur->sibling;
-    }
-    node->addChild($1);
-    node->addChild($2);
-    Node* child3 = new Node($4->lineno, NODE_LIST);
-    Node* child4 = new Node($7->lineno, NODE_LIST);
-    child3->addChild($4);
-    child4->addChild($7);
-    node->addChild(child3);
-    node->addChild(child4);
-    $$ = node;
-}
-| T IDENTIFIER LPAREN RPAREN LBRACE statements RBRACE {
-    $2->nodeType = NODE_FUNC_NAME;
-    Node* node = new Node($1->lineno, NODE_FUNC);
-    node->type = new Type(COMPOSE_FUNCTION);
-    node->type->addRet($1->type);
-    Node* child3 = new Node($6->lineno, NODE_LIST);
-    child3->addChild($6);
-    node->addChild($1);
-    node->addChild($2);
-    node->addChild(child3);
-    $$ = node;
-}
-;
-
-params
-: T IDENTIFIER {
-    $$ = $1;
-    $$->addChild($2);
-    $2->type = cur->type;
-}
-| T IDENTIFIER EQ_ASSIGN CONST {
-    $$ = $1;
-    $$->addChild($2);
-    $$->addChild($4);
-    $2->type = cur->type;
-}
-| params COMMA params {
-    $$ = $1;
-    $$->addSibling($3);
-}
-;
-
-struct_decl
-: STRUCT IDENTIFIER LBRACE members RBRACE SEMICOLON{
-    $$ = $1;
-    $$->addChild($2);
-    Node* child2 = new Node($4->lineno, NODE_LIST);
-    child2->addChild($4);
-    $$->addChild(child2);
-}
-| STRUCT IDENTIFIER LBRACE members RBRACE IDENTIFIER_list SEMICOLON{
-    $$ = $1;
-    $$->addChild($2);
-    Node* child2 = new Node($4->lineno, NODE_LIST);
-    child2->addChild($4);
-    $$->addChild(child2);
-    Node* child3 = new Node($6->lineno, NODE_LIST);
-    child3->addChild($6);
-    $$->addChild(child3);
-}
-;
-
-members
-: T no_init_id_list SEMICOLON{
-    $$ = $1;
-    Node* child1 = new Node($2->lineno, NODE_LIST);
-    child1->addChild($2);
-    $$->addChild(child1);
-}
-| members T no_init_id_list SEMICOLON {
-    $$ = $1;
-    $$->addSibling($2);
-    Node* child1 = new Node($3->lineno, NODE_LIST);
-    child1->addChild($3);
-    $2->addChild(child1);
-}
-;
-
-no_init_id_list
-: MULT IDENTIFIER %prec POINTER{$$ = $2; $2->type = cur->type;}
-| IDENTIFIER {$$ = $1; $1->type = cur->type;}
-| ARRAY {$$ = $1; }
-| no_init_id_list COMMA no_init_id_list {
-    $$ = $1;
-    $$->addSibling($3);
-}
-;
-
 IDENTIFIER_list
 : IDENTIFIER {$$ = $1;}
 | IDENTIFIER_list COMMA IDENTIFIER_list {
     $$ = $1;
     $$->addSibling($3);
-}
-;
-
-ARRAY
-: IDENTIFIER LBRACKET CONST RBRACKET {
-    $$ = $1;
-    $$->addChild($2);
-    $2->addChild($3);
-    $2->nodeType = NODE_ARRAY;
-    $1->type = cur->type;
-}
-| ARRAY LBRACKET CONST RBRACKET {
-    $$ = $1;
-    $$->addChild($2);
-    $2->addChild($3);
-    $2->nodeType = NODE_ARRAY;
 }
 ;
 
@@ -275,16 +158,18 @@ declaration
     node->addChild($1);
     node->addChild(child2);
     $$ = node; 
+    // decl->addChild(node);
 }
 | the_CONST T must_init_declare_id_list {
     NodeAttr* NA1 = new NodeAttr;
     NodeAttr* NA2 = new NodeAttr;
-    Node* child2 = new Node($3->lineno, LIST_NODE, DECLARE_LIST, *NA1, Notype, parse_tree.node_seq++);
+    Node* child3 = new Node($3->lineno, LIST_NODE, DECLARE_LIST, *NA1, Notype, parse_tree.node_seq++);
     child3->addChild($2);
     Node* node = new Node($2->lineno, DECL_NODE, CONST_DECL, *NA2, $2->type, parse_tree.node_seq++);
     node->addChild($1);
     node->addChild(child3);
     $$ = node;
+    // decl->addChild(node);
 }
 ;
 
@@ -294,14 +179,9 @@ declare_id_list
     $$ = $1;
     $$->kind = EXPR_NODE;
     $$->kind_kind = OP_EXPR;
-    $1->child[0].attr.symtbl_seq = symtbl.insert($1->child[0].attr.name, VAR_VAR);
-    $1->child[0]->type = cur->type;
-}
-| MULT IDENTIFIER %prec POINTER {
-    $$ = $2;
-    $2->given = 0;
-    Table.add_symbol($2);
-    $2->type = cur->type;
+    $1->children[0]->attr.symtbl_seq = symtbl.insert($1->children[0]->attr.name, VAR_VAR);
+    symtbl.set_type($1->children[0]->attr.name, $1->children[0]->attr.symtbl_seq, cur->type);
+    $1->children[0]->type = cur->type;
 }
 | IDENTIFIER {
     $$ = $1;
@@ -309,7 +189,6 @@ declare_id_list
     symtbl.set_type($1->attr.name, $1->attr.symtbl_seq, cur->type);
     $1->type = cur->type;
 }
-| ARRAY {$$ = $1;}
 | declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
@@ -319,8 +198,8 @@ must_init_declare_id_list
     $$ = $1;
     $$->kind = EXPR_NODE;
     $$->kind_kind = OP_EXPR;
-    $1->child[0].attr.symtbl_seq = symtbl.insert($1->child[0].attr.name, CONST_VAR);
-    $1->child[0]->type = cur->type;
+    $1->children[0]->attr.symtbl_seq = symtbl.insert($1->children[0]->attr.name, CONST_VAR);
+    $1->children[0]->type = cur->type;
 }
 | must_init_declare_id_list COMMA must_init_declare_id_list {
     $$ = $1;
@@ -358,12 +237,12 @@ for_stmt
     $$->addChild($5);
     $$->addChild($7);
     $$->addChild($9);
-    Node* child = $3->child[1]->child[0];
+    Node* child = $3->children[1]->children[0];
     while(child != nullptr)
     {
         string name;
         if(child->kind_kind == OP_EXPR)
-            name = child->child[0]->attr.name;
+            name = child->children[0]->attr.name;
         else
             name = child->attr.name;
         symtbl.match(name);
@@ -375,7 +254,8 @@ for_stmt
     $$->addChild($3);
     $$->addChild($5);
     $$->addChild($7);
-    Node* child4 = new Node($10->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child4 = new Node($10->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child4->addChild($10);
     $$->addChild(child4);
 }
@@ -384,15 +264,16 @@ for_stmt
     $$->addChild($3);
     $$->addChild($5);
     $$->addChild($7);
-    Node* child4 = new Node($10->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child4 = new Node($10->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child4->addChild($10);
     $$->addChild(child4);
-    Node* child = $3->child[1]->child[0];
+    Node* child = $3->children[1]->children[0];
     while(child != nullptr)
     {
         string name;
         if(child->kind_kind == OP_EXPR)
-            name = child->child[0]->attr.name;
+            name = child->children[0]->attr.name;
         else
             name = child->attr.name;
         symtbl.match(name);
@@ -409,7 +290,8 @@ for_stmt
     $$ = $1;
     $$->addChild($4);
     $$->addChild($6);
-    Node* child3 = new Node($9->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child3 = new Node($9->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child3->addChild($9);
     $$->addChild(child3);
 }
@@ -427,7 +309,8 @@ matched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE matched_stmt {
     $$ = $1;
     $$->addChild($3);
-    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child2->addChild($6);
     $$->addChild(child2);
     $$->addSibling($8);
@@ -438,7 +321,8 @@ matched_if_stmt
     $$->addChild($3);
     $$->addChild($5);
 
-    Node* child3 = new Node($8->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child3 = new Node($8->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child3->addChild($8);
     $6->addChild(child3);
     $$->addSibling($6);
@@ -446,11 +330,14 @@ matched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
     $$ = $1;
     $$->addChild($3);
-    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT);
+
+    NodeAttr* NA1 = new NodeAttr;
+    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT, *NA1, Notype, parse_tree.node_seq++);
     child2->addChild($6);
     $$->addChild(child2);
     
-    Node* child3 = new Node($10->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA2 = new NodeAttr;
+    Node* child3 = new Node($10->lineno, STMT_NODE, COMP_STMT, *NA2, Notype, parse_tree.node_seq++);
     child3->addChild($10);
     $8->addChild(child3);
     $$->addSibling($8);
@@ -469,7 +356,8 @@ unmatched_if_stmt
     $$ = $1;
     $$->addChild($3);
 
-    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child2->addChild($6);
     $$->addChild(child2);
     $$->addSibling($8);
@@ -483,34 +371,12 @@ unmatched_if_stmt
 | IF LPAREN expr RPAREN LBRACE statements RBRACE %prec IFX {
     $$ = $1;
     $$->addChild($3);
-    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT);
+    NodeAttr* NA = new NodeAttr;
+    Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child2->addChild($6);
     $$->addChild(child2);
 }
 ;
-
-printf_stmt
-: PRINTF LPAREN expr_list RPAREN {
-    $$ = $1;
-    $$->addChild($3);
-}
-| PRINTF LPAREN STRING COMMA expr_list RPAREN {
-    $$ = $1;
-    $$->addChild($3);
-    Node* child2 = new Node($5->lineno, NODE_LIST);
-    child2->addChild($5);
-    $$->addChild(child2);
-}
-;
-
-scanf_stmt
-: SCANF LPAREN STRING COMMA expr_list RPAREN {
-    $$ = $1;
-    $$->addChild($3);
-    Node* child2 = new Node($5->lineno, NODE_LIST);
-    child2->addChild($5);
-    $$->addChild(child2);
-}
 
 expr_stmt
 : expr {$$ = $1;}
@@ -565,31 +431,6 @@ expr
     $$->addChild($1);
     $$->addChild($3);
 }
-| expr DOT IDENTIFIER {
-    $$ = $2;
-    $$->addChild($1);
-    $$->addChild($3);
-}
-| expr ARROW IDENTIFIER {
-    $$ = $2;
-    $$->addChild($1);
-    $$->addChild($3);
-}
-| expr LBRACKET expr RBRACKET {
-    $$ = $2;
-    $$->addChild($1);
-    $$->addChild($3);
-}
-| expr LPAREN RPAREN {
-    $$ = $1;
-}
-| expr LPAREN expr_list RPAREN {
-    $$ = $1;
-    $$->nodeType = NODE_FUNC;
-    Node* child1 = new Node($3->lineno, NODE_LIST);
-    child1->addChild($3);
-    $$->addChild(child1);
-}
 | DPLUS expr %prec UDPLUS {
     $$ = $2; $$->addChild($1); 
 
@@ -602,7 +443,6 @@ expr
 | DMINUS expr %prec UDMINUS {
     $$ = $2; 
     $$->addChild($1); 
-
 }
 | expr DMINUS {
     $$ = $2; 
@@ -664,7 +504,6 @@ T: T_INT {
     cur = $$;
 } 
 ;
-
 
 %%
 

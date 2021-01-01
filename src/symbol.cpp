@@ -7,11 +7,12 @@ void symbol_table::match()
 	this->iter = this->table.begin();
     while(this->iter != this->table.end())
     {
-        for(int i = 0; i < this->table[this->iter->first].size(); i++)
+        for(int i = 0; i < int(this->table[this->iter->first].size()); i++)
 		{
 			if(this->table[this->iter->first][i].unmatched >= 0)
 				this->table[this->iter->first][i].unmatched--;
 		}
+		this->iter++;
     }
 }
 
@@ -20,11 +21,12 @@ void symbol_table::unmatch()
 	this->iter = this->table.begin();
     while(this->iter != this->table.end())
     {
-        for(int i = 0; i < this->table[this->iter->first].size(); i++)
+        for(int i = 0; i < int(this->table[this->iter->first].size()); i++)
 		{
 			if(this->table[this->iter->first][i].unmatched >= 0)
 				this->table[this->iter->first][i].unmatched++;
 		}
+		this->iter++;
     }
 }
 
@@ -36,7 +38,7 @@ void symbol_table::match(string name)
     {
 		if(this->iter->first == name)
 		{
-			for(int i = 0; i < this->table[this->iter->first].size(); i++)
+			for(int i = 0; i < int(this->table[this->iter->first].size()); i++)
 			{
 				if(this->table[this->iter->first][i].unmatched >= 0)
 					seq = i;
@@ -46,6 +48,7 @@ void symbol_table::match(string name)
 				this->table[this->iter->first][seq].unmatched--;
 			}
 		}
+		this->iter++;
     }
 }
 
@@ -55,7 +58,7 @@ int symbol_table::lookup(string name)
 	int result = -1;
 	if(this->table.count(name) <= 0)
 		return result;
-	for (int i = 0; i < this->table[name].size(); i++)
+	for (int i = 0; i < int(this->table[name].size()); i++)
 		if (table[name][i].unmatched >= 0)
 			result = i;
 	return result;
@@ -84,7 +87,7 @@ int symbol_table::gettoken(string name)
 	int result = -1;
 	if(this->table.count(name) <= 0)
 		return result;
-	for (int i = 0; i < this->table[name].size(); i++)
+	for (int i = 0; i < int(this->table[name].size()); i++)
 		if (table[name][i].unmatched >= 0)
 			result = this->table[name][i].token;
 	return result;
@@ -96,7 +99,7 @@ int symbol_table::set_type(string name, int pos, int type)
 	if(this->table.count(name) <= 0)
 		return -1;
 	// 如果位置有问题，就退出
-	if (pos < 0 || pos >= this->table[name].size())
+	if (pos < 0 || pos >= int(this->table[name].size()))
 	{
 		cerr << "Bad identifier" << endl;
 		return -1;
@@ -112,7 +115,7 @@ int symbol_table::get_type(string name, int pos)
 	if(this->table.count(name) <= 0)
 		return -1;
 	// 位置有问题就退出
-	if (pos < 0 || pos >= this->table[name].size())
+	if (pos < 0 || pos >= int(this->table[name].size()))
 	{
 		cerr << "Bad identifier" << endl;
 		return -1;
