@@ -69,13 +69,13 @@
 #line 1 "src/main.y"
 
     #include "common.h"
-    #define YYSTYPE TreeNode *  
-    TreeNode* root;
+    #define YYSTYPE  Node *  
+     Node* root;
     extern int lineno;
     extern table Table;
     // extern function_decl func_list;
     // extern struct_decl struct_list;
-    extern TreeNode* cur;
+    extern  Node* cur;
     int yylex();
     int yyerror( char const * );
 
@@ -1772,7 +1772,7 @@ yyreduce:
     {
   case 2:
 #line 65 "src/main.y"
-             {root = new TreeNode(0, NODE_PROG); root->addChild(yyvsp[0]);}
+             {root = new  Node(0, NODE_PROG); root->addChild(yyvsp[0]);}
 #line 1777 "src/main.tab.cpp"
     break;
 
@@ -1790,7 +1790,7 @@ yyreduce:
 
   case 5:
 #line 73 "src/main.y"
-             {yyval = new TreeNode(lineno, NODE_STMT); yyval->stype = STMT_SKIP;}
+             {yyval = new  Node(lineno, NODE_STMT); yyval->stype = STMT_SKIP;}
 #line 1795 "src/main.tab.cpp"
     break;
 
@@ -1876,10 +1876,10 @@ yyreduce:
 #line 96 "src/main.y"
                                                              {
     yyvsp[-6]->nodeType = NODE_FUNC_NAME;
-    TreeNode* node = new TreeNode(yyvsp[-7]->lineno, NODE_FUNC);
+     Node* node = new  Node(yyvsp[-7]->lineno, NODE_FUNC);
     node->type = new Type(COMPOSE_FUNCTION);
     node->type->addRet(yyvsp[-7]->type);
-    TreeNode* cur = yyvsp[-4];
+     Node* cur = yyvsp[-4];
     while(cur != nullptr)
     {
         node->type->addParam(cur->type);
@@ -1887,8 +1887,8 @@ yyreduce:
     }
     node->addChild(yyvsp[-7]);
     node->addChild(yyvsp[-6]);
-    TreeNode* child3 = new TreeNode(yyvsp[-4]->lineno, NODE_LIST);
-    TreeNode* child4 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child3 = new  Node(yyvsp[-4]->lineno, NODE_LIST);
+     Node* child4 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child3->addChild(yyvsp[-4]);
     child4->addChild(yyvsp[-1]);
     node->addChild(child3);
@@ -1902,10 +1902,10 @@ yyreduce:
 #line 117 "src/main.y"
                                                       {
     yyvsp[-5]->nodeType = NODE_FUNC_NAME;
-    TreeNode* node = new TreeNode(yyvsp[-6]->lineno, NODE_FUNC);
+     Node* node = new  Node(yyvsp[-6]->lineno, NODE_FUNC);
     node->type = new Type(COMPOSE_FUNCTION);
     node->type->addRet(yyvsp[-6]->type);
-    TreeNode* child3 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child3 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child3->addChild(yyvsp[-1]);
     node->addChild(yyvsp[-6]);
     node->addChild(yyvsp[-5]);
@@ -1950,7 +1950,7 @@ yyreduce:
                                                    {
     yyval = yyvsp[-5];
     yyval->addChild(yyvsp[-4]);
-    TreeNode* child2 = new TreeNode(yyvsp[-2]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-2]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-2]);
     yyval->addChild(child2);
 }
@@ -1962,10 +1962,10 @@ yyreduce:
                                                                    {
     yyval = yyvsp[-6];
     yyval->addChild(yyvsp[-5]);
-    TreeNode* child2 = new TreeNode(yyvsp[-3]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-3]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-3]);
     yyval->addChild(child2);
-    TreeNode* child3 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child3 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child3->addChild(yyvsp[-1]);
     yyval->addChild(child3);
 }
@@ -1976,7 +1976,7 @@ yyreduce:
 #line 170 "src/main.y"
                              {
     yyval = yyvsp[-2];
-    TreeNode* child1 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child1 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child1->addChild(yyvsp[-1]);
     yyval->addChild(child1);
 }
@@ -1988,7 +1988,7 @@ yyreduce:
                                       {
     yyval = yyvsp[-3];
     yyval->addSibling(yyvsp[-2]);
-    TreeNode* child1 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child1 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child1->addChild(yyvsp[-1]);
     yyvsp[-2]->addChild(child1);
 }
@@ -2132,10 +2132,10 @@ yyreduce:
   case 42:
 #line 265 "src/main.y"
                     { // declare and init
-    TreeNode* node = new TreeNode(yyvsp[-1]->lineno, NODE_STMT);
+     Node* node = new  Node(yyvsp[-1]->lineno, NODE_STMT);
     node->stype = STMT_DECL;
     node->addChild(yyvsp[-1]);
-    TreeNode* child2 = new TreeNode(yyvsp[0]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[0]->lineno, NODE_LIST);
     child2->addChild(yyvsp[0]);
     node->addChild(child2);
     yyval = node; 
@@ -2146,13 +2146,13 @@ yyreduce:
   case 43:
 #line 274 "src/main.y"
                                         {
-    TreeNode* node = new TreeNode(yyvsp[-1]->lineno, NODE_STMT);
+     Node* node = new  Node(yyvsp[-1]->lineno, NODE_STMT);
     node->stype = STMT_DECL;
     node->addChild(yyvsp[-1]);
-    TreeNode* child3 = new TreeNode(yyvsp[0]->lineno, NODE_LIST);
+     Node* child3 = new  Node(yyvsp[0]->lineno, NODE_LIST);
     child3->addChild(yyvsp[0]);
     node->addChild(child3);
-    TreeNode* child = yyvsp[0];
+     Node* child = yyvsp[0];
     while(child != nullptr)
     {
         if(child->child->nodeType == NODE_VAR)
@@ -2265,7 +2265,7 @@ yyreduce:
                                                     {
     yyval = yyvsp[-6];
     yyval->addChild(yyvsp[-4]);
-    TreeNode* child2 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-1]);
     yyval->addChild(child2);
 }
@@ -2292,7 +2292,7 @@ yyreduce:
     yyval->addChild(yyvsp[-4]);
     yyval->addChild(yyvsp[-2]);
     yyval->addChild(yyvsp[0]);
-    TreeNode* child = yyvsp[-6]->child->sibling->child;
+     Node* child = yyvsp[-6]->child->sibling->child;
     while(child != nullptr)
     {
         string name;
@@ -2314,7 +2314,7 @@ yyreduce:
     yyval->addChild(yyvsp[-8]);
     yyval->addChild(yyvsp[-6]);
     yyval->addChild(yyvsp[-4]);
-    TreeNode* child4 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child4 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child4->addChild(yyvsp[-1]);
     yyval->addChild(child4);
 }
@@ -2328,10 +2328,10 @@ yyreduce:
     yyval->addChild(yyvsp[-8]);
     yyval->addChild(yyvsp[-6]);
     yyval->addChild(yyvsp[-4]);
-    TreeNode* child4 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child4 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child4->addChild(yyvsp[-1]);
     yyval->addChild(child4);
-    TreeNode* child = yyvsp[-8]->child->sibling->child;
+     Node* child = yyvsp[-8]->child->sibling->child;
     while(child != nullptr)
     {
         string name;
@@ -2363,7 +2363,7 @@ yyreduce:
     yyval = yyvsp[-9];
     yyval->addChild(yyvsp[-6]);
     yyval->addChild(yyvsp[-4]);
-    TreeNode* child3 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child3 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child3->addChild(yyvsp[-1]);
     yyval->addChild(child3);
 }
@@ -2387,7 +2387,7 @@ yyreduce:
                                                                    {
     yyval = yyvsp[-8];
     yyval->addChild(yyvsp[-6]);
-    TreeNode* child2 = new TreeNode(yyvsp[-3]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-3]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-3]);
     yyval->addChild(child2);
     yyval->addSibling(yyvsp[-1]);
@@ -2413,7 +2413,7 @@ yyreduce:
                                                                                {
     yyval = yyvsp[-10];
     yyval->addChild(yyvsp[-8]);
-    TreeNode* child2 = new TreeNode(yyvsp[-5]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-5]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-5]);
     yyval->addChild(child2);
     yyval->addSibling(yyvsp[-3]);
@@ -2439,7 +2439,7 @@ yyreduce:
                                                                      {
     yyval = yyvsp[-8];
     yyval->addChild(yyvsp[-6]);
-    TreeNode* child2 = new TreeNode(yyvsp[-3]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-3]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-3]);
     yyval->addChild(child2);
     yyval->addSibling(yyvsp[-1]);
@@ -2463,7 +2463,7 @@ yyreduce:
                                                            {
     yyval = yyvsp[-6];
     yyval->addChild(yyvsp[-4]);
-    TreeNode* child2 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-1]);
     yyval->addChild(child2);
 }
@@ -2484,7 +2484,7 @@ yyreduce:
                                               {
     yyval = yyvsp[-5];
     yyval->addChild(yyvsp[-3]);
-    TreeNode* child2 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-1]);
     yyval->addChild(child2);
 }
@@ -2496,7 +2496,7 @@ yyreduce:
                                              {
     yyval = yyvsp[-5];
     yyval->addChild(yyvsp[-3]);
-    TreeNode* child2 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child2 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child2->addChild(yyvsp[-1]);
     yyval->addChild(child2);
 }
@@ -2660,7 +2660,7 @@ yyreduce:
                                {
     yyval = yyvsp[-3];
     yyval->nodeType = NODE_FUNC;
-    TreeNode* child1 = new TreeNode(yyvsp[-1]->lineno, NODE_LIST);
+     Node* child1 = new  Node(yyvsp[-1]->lineno, NODE_LIST);
     child1->addChild(yyvsp[-1]);
     yyval->addChild(child1);
 }
@@ -2807,25 +2807,25 @@ yyreduce:
 
   case 104:
 #line 673 "src/main.y"
-         {yyval = new TreeNode(lineno, NODE_TYPE); yyval->type = TYPE_INT; cur = yyval;}
+         {yyval = new  Node(lineno, NODE_TYPE); yyval->type = TYPE_INT; cur = yyval;}
 #line 2812 "src/main.tab.cpp"
     break;
 
   case 105:
 #line 674 "src/main.y"
-         {yyval = new TreeNode(lineno, NODE_TYPE); yyval->type = TYPE_CHAR; cur = yyval;}
+         {yyval = new  Node(lineno, NODE_TYPE); yyval->type = TYPE_CHAR; cur = yyval;}
 #line 2818 "src/main.tab.cpp"
     break;
 
   case 106:
 #line 675 "src/main.y"
-         {yyval = new TreeNode(lineno, NODE_TYPE); yyval->type = TYPE_BOOL; cur = yyval;}
+         {yyval = new  Node(lineno, NODE_TYPE); yyval->type = TYPE_BOOL; cur = yyval;}
 #line 2824 "src/main.tab.cpp"
     break;
 
   case 107:
 #line 676 "src/main.y"
-       {yyval = new TreeNode(lineno, NODE_TYPE); yyval->type = TYPE_VOID; cur = yyval;}
+       {yyval = new  Node(lineno, NODE_TYPE); yyval->type = TYPE_VOID; cur = yyval;}
 #line 2830 "src/main.tab.cpp"
     break;
 

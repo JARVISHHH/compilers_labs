@@ -19,4 +19,8 @@
 #include <unordered_map>
 #include <queue>
 
+#define MAX_ID 1024
+
+using namespace ::std;
+
 #endif

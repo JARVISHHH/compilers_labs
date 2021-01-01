@@ -1,8 +1,9 @@
 #include "common.h"
 #include <fstream>
 
-extern TreeNode *root;  // main.y
+// extern  Node *root;  // main.y
 extern FILE *yyin;  // yacc缺省输入
+extern tree parse_tree;
 extern int yyparse();
 
 using namespace std;
@@ -23,9 +24,11 @@ int main(int argc, char *argv[])
     }
     // yacc生成的语法分析程序的入口点
     yyparse();
-    if(root != NULL) {
-        root->genNodeId();  // 为整棵语法树授予id
-        root->printAST();
+    if(parse_tree.root != NULL) {
+        parse_tree.get_label();
+        parse_tree.gen_code(std::cout);
+        // root->genNodeId();  // 为整棵语法树授予id
+        // root->printAST();
     }
     return 0;
 }

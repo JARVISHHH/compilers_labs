@@ -9,10 +9,11 @@ using std::string;
 using std::list;
 using std::stack;
 using std::unordered_map;
-#define YYSTYPE TreeNode *
+#define YYSTYPE  Node *
 
 #include "./tree.h"
 #include "./main.tab.h"
-#include "./table.h"
+#include "./symbol.h"
+// #include "./table.h"
 
 #endif

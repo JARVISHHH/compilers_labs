@@ -532,7 +532,7 @@ int lineno = 1;  // 行号
 table Table;
 //function_decl func_list;
 //struct_decl struct_list;
-TreeNode* cur;
+ Node* cur;
 #line 537 "src/main.lex.yy.cpp"
 #line 538 "src/main.lex.yy.cpp"
 
@@ -844,7 +844,7 @@ case 7:
 YY_RULE_SETUP
 #line 49 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_DPLUS;
     yylval = node;
     return DPLUS;
@@ -854,7 +854,7 @@ case 8:
 YY_RULE_SETUP
 #line 55 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_DMINUS;
     yylval = node;
     return DMINUS;
@@ -864,7 +864,7 @@ case 9:
 YY_RULE_SETUP
 #line 62 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_BRCKET;
     yylval = node;
     return LBRACKET;
@@ -879,7 +879,7 @@ case 11:
 YY_RULE_SETUP
 #line 70 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_P;
     yylval = node;
     return LPAREN;
@@ -910,7 +910,7 @@ case 15:
 YY_RULE_SETUP
 #line 85 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_COMMA;
     yylval = node;
     return COMMA;
@@ -925,7 +925,7 @@ case 17:
 YY_RULE_SETUP
 #line 92 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_PLUS;
     yylval = node;
     return PLUS;
@@ -935,7 +935,7 @@ case 18:
 YY_RULE_SETUP
 #line 98 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_MINUS;
     yylval = node;
     return MINUS;
@@ -945,7 +945,7 @@ case 19:
 YY_RULE_SETUP
 #line 104 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_MULT;
     yylval = node;
     return MULT;
@@ -955,7 +955,7 @@ case 20:
 YY_RULE_SETUP
 #line 110 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_DIV;
     yylval = node;
     return DIV;
@@ -965,7 +965,7 @@ case 21:
 YY_RULE_SETUP
 #line 116 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_AND;
     yylval = node;
     return AND;
@@ -975,7 +975,7 @@ case 22:
 YY_RULE_SETUP
 #line 122 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_OR;
     yylval = node;
     return OR;
@@ -985,7 +985,7 @@ case 23:
 YY_RULE_SETUP
 #line 128 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_NOT;
     yylval = node;
     return NOT;
@@ -995,7 +995,7 @@ case 24:
 YY_RULE_SETUP
 #line 134 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_POS;
     yylval = node;
     return POS;
@@ -1005,7 +1005,7 @@ case 25:
 YY_RULE_SETUP
 #line 140 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_MOD;
     yylval = node;
     return MOD;
@@ -1015,7 +1015,7 @@ case 26:
 YY_RULE_SETUP
 #line 146 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_DOT;
     yylval = node;
     return DOT;
@@ -1025,7 +1025,7 @@ case 27:
 YY_RULE_SETUP
 #line 152 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     node->optype = OP_ARROW;
     yylval = node;
     return ARROW;
@@ -1035,7 +1035,7 @@ case 28:
 YY_RULE_SETUP
 #line 160 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_WHILE;
     yylval = node;
     return WHILE;
@@ -1045,7 +1045,7 @@ case 29:
 YY_RULE_SETUP
 #line 167 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     yylval = node;
     return RETURN;
 }
@@ -1054,7 +1054,7 @@ case 30:
 YY_RULE_SETUP
 #line 173 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_FOR;
     yylval = node;
     return FOR;
@@ -1064,7 +1064,7 @@ case 31:
 YY_RULE_SETUP
 #line 180 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_IF;
     yylval = node;
     return IF;
@@ -1074,7 +1074,7 @@ case 32:
 YY_RULE_SETUP
 #line 187 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_ELSE;
     yylval = node;
     return ELSE;
@@ -1084,7 +1084,7 @@ case 33:
 YY_RULE_SETUP
 #line 194 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_PRINTF;
     yylval = node;
     return PRINTF;
@@ -1094,7 +1094,7 @@ case 34:
 YY_RULE_SETUP
 #line 201 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_SCANF;
     yylval = node;
     return SCANF;
@@ -1109,7 +1109,7 @@ case 36:
 YY_RULE_SETUP
 #line 210 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+     Node* node = new  Node(lineno, NODE_CONST);
     node->type = TYPE_BOOL;
     node->b_val = 1;
     yylval = node;
@@ -1120,7 +1120,7 @@ case 37:
 YY_RULE_SETUP
 #line 218 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+     Node* node = new  Node(lineno, NODE_CONST);
     node->type = TYPE_BOOL;
     node->b_val = 0;
     yylval = node;
@@ -1131,7 +1131,7 @@ case 38:
 YY_RULE_SETUP
 #line 226 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_TYPE);
+     Node* node = new  Node(lineno, NODE_TYPE);
     node->type = new Type(COMPOSE_STRUCT);
     yylval = node;
     return STRUCT;
@@ -1141,7 +1141,7 @@ case 39:
 YY_RULE_SETUP
 #line 233 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
     node->optype = OP_PLUSASSIGN;
     yylval = node;
@@ -1152,7 +1152,7 @@ case 40:
 YY_RULE_SETUP
 #line 241 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
     node->optype = OP_MINUSASSIGN;
     yylval = node;
@@ -1163,7 +1163,7 @@ case 41:
 YY_RULE_SETUP
 #line 249 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
     node->optype = OP_MULASSIGN;
     yylval = node;
@@ -1174,7 +1174,7 @@ case 42:
 YY_RULE_SETUP
 #line 257 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
     node->optype = OP_DIVASSIGN;
     yylval = node;
@@ -1185,7 +1185,7 @@ case 43:
 YY_RULE_SETUP
 #line 265 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_STMT);
+     Node* node = new  Node(lineno, NODE_STMT);
     node->stype = STMT_ASSIGN;
     node->optype = OP_ASSIGN;
     yylval = node;
@@ -1196,7 +1196,7 @@ case 44:
 YY_RULE_SETUP
 #line 273 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_EXPR);
+     Node* node = new  Node(lineno, NODE_EXPR);
     yylval = node;
     if(!memcmp(yytext, "==", 2))
         node->optype = OP_EQ;
@@ -1217,7 +1217,7 @@ case 45:
 YY_RULE_SETUP
 #line 291 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+     Node* node = new  Node(lineno, NODE_CONST);
     node->type = TYPE_INT;
     node->int_val = atoi(yytext);
     yylval = node;
@@ -1228,7 +1228,7 @@ case 46:
 YY_RULE_SETUP
 #line 299 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+     Node* node = new  Node(lineno, NODE_CONST);
     node->type = TYPE_CHAR;
     node->ch_val = yytext[1];
     yylval = node;
@@ -1239,7 +1239,7 @@ case 47:
 YY_RULE_SETUP
 #line 307 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_VAR);
+     Node* node = new  Node(lineno, NODE_VAR);
     node->var_name = string(yytext);
     yylval = node;
     return IDENTIFIER;
@@ -1249,7 +1249,7 @@ case 48:
 YY_RULE_SETUP
 #line 314 "src/main.lex"
 {
-    TreeNode* node = new TreeNode(lineno, NODE_CONST);
+     Node* node = new  Node(lineno, NODE_CONST);
     node->type = TYPE_STRING;
     node->str_val = yytext;
     yylval = node;
