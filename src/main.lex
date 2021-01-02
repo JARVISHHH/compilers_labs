@@ -181,7 +181,6 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, WHILE_STMT, *NA, Notype, parse_tree.node_seq++);
     yylval = node;
-    cout << "识别到while了" << endl;
     return WHILE;
 }
 
@@ -334,6 +333,7 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     NA->valstr = string(yytext);
     Node* node = new Node(lineno, EXPR_NODE, CONST_EXPR, *NA, String, parse_tree.node_seq++);
     yylval = node;
+    // cout<<"检测到string"<<endl;
     return STRING;
 }
 

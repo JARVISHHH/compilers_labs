@@ -12,14 +12,16 @@ t0:
 
 # your asm code here
 	.text
-	.globl _start
-_start:
+	.globl main
+	.type main, @function
+main:
+	movl $1, _a
 	# your own code of AND operation here
-	jl @1
+	jl .L1
 	# your asm code of AND operation end
-	movl $_a, %eax
+	movl _a, %eax
 	addl $1, %eax
-	movl %eax, $t0
-	jmp _start
-@1:
+	movl %eax, t0
+	jmp main
+.L1:
 	ret

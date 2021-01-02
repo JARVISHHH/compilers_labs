@@ -1058,13 +1058,12 @@ YY_RULE_SETUP
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, WHILE_STMT, *NA, Notype, parse_tree.node_seq++);
     yylval = node;
-    cout << "识别到while了" << endl;
     return WHILE;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 188 "src/main.lex"
+#line 187 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, RETURN_STMT, *NA, Notype, parse_tree.node_seq++);
@@ -1074,7 +1073,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 195 "src/main.lex"
+#line 194 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, FOR_STMT, *NA, Notype, parse_tree.node_seq++);
@@ -1084,7 +1083,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 202 "src/main.lex"
+#line 201 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, IF_STMT, *NA, Notype, parse_tree.node_seq++);
@@ -1094,7 +1093,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 209 "src/main.lex"
+#line 208 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, ELSE_STMT, *NA, Notype, parse_tree.node_seq++);
@@ -1104,7 +1103,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 216 "src/main.lex"
+#line 215 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, PRINT_STMT, *NA, Notype, parse_tree.node_seq++);
@@ -1114,7 +1113,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 223 "src/main.lex"
+#line 222 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, STMT_NODE, SCAN_STMT, *NA, Notype, parse_tree.node_seq++);
@@ -1124,12 +1123,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 230 "src/main.lex"
+#line 229 "src/main.lex"
 return the_CONST;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 232 "src/main.lex"
+#line 231 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, EXPR_NODE, CONST_EXPR, *NA, Boolean, parse_tree.node_seq++);
@@ -1139,7 +1138,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 239 "src/main.lex"
+#line 238 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     Node* node = new Node(lineno, EXPR_NODE, CONST_EXPR, *NA, Boolean, parse_tree.node_seq++);
@@ -1149,7 +1148,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 246 "src/main.lex"
+#line 245 "src/main.lex"
 {
     // Node* node = new Node(lineno, NODE_TYPE);
     // node->type = new Type(COMPOSE_STRUCT);
@@ -1159,7 +1158,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 253 "src/main.lex"
+#line 252 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr(OP_PLUSASSIGN);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Integer, parse_tree.node_seq++);
@@ -1169,7 +1168,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 260 "src/main.lex"
+#line 259 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr(OP_MINUSASSIGN);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Integer, parse_tree.node_seq++);
@@ -1179,7 +1178,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 267 "src/main.lex"
+#line 266 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr(OP_MULASSIGN);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Integer, parse_tree.node_seq++);
@@ -1189,7 +1188,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 274 "src/main.lex"
+#line 273 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr(OP_DIVASSIGN);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Integer, parse_tree.node_seq++);
@@ -1199,7 +1198,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 281 "src/main.lex"
+#line 280 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr(OP_ASSIGN);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Notype, parse_tree.node_seq++);
@@ -1209,7 +1208,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 288 "src/main.lex"
+#line 287 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     if(!memcmp(yytext, "==", 2))
@@ -1233,7 +1232,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 309 "src/main.lex"
+#line 308 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     NA->vali = atoi(yytext);
@@ -1244,7 +1243,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 317 "src/main.lex"
+#line 316 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr(yytext[0]);
     Node* node = new Node(lineno, EXPR_NODE, CONST_EXPR, *NA, Char, parse_tree.node_seq++);
@@ -1254,7 +1253,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 324 "src/main.lex"
+#line 323 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     NA->name = string(yytext);
@@ -1265,12 +1264,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 332 "src/main.lex"
+#line 331 "src/main.lex"
 {
     NodeAttr* NA = new NodeAttr;
     NA->valstr = string(yytext);
     Node* node = new Node(lineno, EXPR_NODE, CONST_EXPR, *NA, String, parse_tree.node_seq++);
     yylval = node;
+    // cout<<"检测到string"<<endl;
     return STRING;
 }
 	YY_BREAK

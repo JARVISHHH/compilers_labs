@@ -23,9 +23,13 @@ int main(int argc, char *argv[])
         }
     }
     // yacc生成的语法分析程序的入口点
+    // cout<<"分析开始"<<endl;
     yyparse();
+    // cout<<"分析完成"<<endl;
     if(parse_tree.root != NULL) {
+        // cout<<"获取标签"<<endl;
         parse_tree.get_label();
+        // cout<<"获取代码"<<endl;
         parse_tree.gen_code(std::cout);
         // root->genNodeId();  // 为整棵语法树授予id
         // root->printAST();

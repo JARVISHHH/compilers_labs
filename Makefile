@@ -34,3 +34,7 @@ test:
 	# ./bin/main tests/1.c > result_1.s
 	# ./bin/main tests/2.c > result_2.s
 	# ./bin/main tests/3.c > result_3.s
+
+try:
+	gcc result_test.s -m32 -o main.out
+	qemu-i386 main.out

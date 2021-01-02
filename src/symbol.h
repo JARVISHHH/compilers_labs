@@ -9,14 +9,18 @@ typedef struct TAG_SYMBOL_ENTRY
 {
 	int token;
 	int type;  // 类型
-	
+	string content;  // 内容
 	int unmatched = 0;  // 未匹配的左括号的个数
+	int param_size = 0;
+	int param_type[MAX_PARAM] = {-1};
+	int return_type;
+	int position = 0;
 } symbol_entry;
 
 // 符号表
 class symbol_table
 {
-private:
+public:
 	unordered_map<string, unordered_map<int, symbol_entry>> table;
 	unordered_map<string, unordered_map<int, symbol_entry>>::iterator iter;
 
@@ -27,9 +31,11 @@ public:
 	int lookup(string name);  // 寻找
 	int insert(string name);  // 插入
 	int insert(string name, int token);  // 插入
+	int insert(string name, string content);  // 插入
 	int gettoken(string name);
 	int set_type(string name, int pos, int type);  // 将位于pos的符号的类型设置为type
 	int get_type(string name, int pos);  // 获得pos的类型
+	string get_content(string name, int pos);
 };
 
 #endif

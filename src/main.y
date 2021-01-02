@@ -10,7 +10,11 @@
     int yylex();
     int yyerror( char const * );
 
-    // Node* decl = new Node(0, DECL_NODE, COMP_DECL, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    int param[MAX_PARAM] = {-1};
+    int size = 0;
+    int position = 0;
+
+    // Node* decl = new Node(0, DECL_NODE, COMP_DECL, *(new NodeAttr), Notype, 0);
 %}
 
 %token T_CHAR T_INT T_STRING T_BOOL T_VOID
@@ -38,6 +42,7 @@
 %nonassoc ELSE
 
 %nonassoc AFTER_COMMA
+
 %left COMMA
 %nonassoc BEFORE_COMMA
 
@@ -56,7 +61,7 @@
 %right POINTER
 %left DMINUS DPLUS
 %nonassoc FXL
-%nonassoc LPAREN LBRACKET 
+%nonassoc LPAREN LBRACKET RPAREN
 %right ARROW DOT
 
 %nonassoc BIGGEST
@@ -92,11 +97,14 @@ statement
 ;
 
 matched_stmt
-: while_stmt {$$ = $1;}
+: function {$$ = $1;}
+| while_stmt {$$ = $1;}
 | for_stmt {$$ = $1;}
 | RETURN_stmt SEMICOLON {$$ = $1;}
-| declaration SEMICOLON {$$ = $1;}
+| printf_stmt SEMICOLON {$$ = $1;}
+| scanf_stmt SEMICOLON {$$ = $1;}
 | expr_stmt SEMICOLON {$$ = $1;}
+| declaration SEMICOLON {$$ = $1;}
 | matched_if_stmt {$$ = $1;}
 ;
 
@@ -104,9 +112,67 @@ unmatched_stmt
 : unmatched_if_stmt {$$ = $1;}
 ;
 
-IDENTIFIER_list
-: IDENTIFIER {$$ = $1;}
-| IDENTIFIER_list COMMA IDENTIFIER_list {
+function
+: funtion_head LBRACE statements RBRACE {
+    Node* node = $$;
+    Node* child = new Node($3->lineno, STMT_NODE, COMP_STMT, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    child->addChild($3);
+    node->addChild(child);
+    $$ = node;
+}
+;
+
+funtion_head
+: T IDENTIFIER LPAREN params RPAREN {
+    $2->type = $1->type;
+    $2->attr.symtbl_seq = symtbl.insert($2->attr.name, FUNC);
+    symtbl.table[$2->attr.name][$2->attr.symtbl_seq].param_size = size;
+    symtbl.table[$2->attr.name][$2->attr.symtbl_seq].return_type = cur->type;
+    for(int i = 0; i < size; i++)
+    {
+        symtbl.table[$2->attr.name][$2->attr.symtbl_seq].param_type[i] = param[i];
+    }
+    size = 0;
+    position = 0;
+
+    Node* node = new Node($1->lineno, DECL_NODE, FUNC_DECL, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    node->addChild($1);
+    node->addChild($2);
+    Node* child3 = new Node($4->lineno, LIST_NODE, PARAM_LIST, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    child3->addChild($4);
+    node->addChild(child3);
+    $$ = node;
+}
+| T IDENTIFIER LPAREN RPAREN {
+    $2->type = $1->type;
+    $2->attr.symtbl_seq = symtbl.insert($2->attr.name, FUNC);
+    symtbl.table[$2->attr.name][$2->attr.symtbl_seq].param_size = 0;
+    symtbl.table[$2->attr.name][$2->attr.symtbl_seq].return_type = cur->type;
+    size = 0;
+    position = 0;
+
+    Node* node = new Node($1->lineno, DECL_NODE, FUNC_DECL, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    node->addChild($1);
+    node->addChild($2);
+    $$ = node;
+}
+
+params
+: T IDENTIFIER {
+    parse_tree.max_temp++;
+    param[size] = cur->type;
+    size++;
+    Node* node = new Node($1->lineno, DECL_NODE, VAR_DECL, *(new NodeAttr), $1->type, parse_tree.node_seq++);
+    node->addChild($1);
+    node->addChild($2);
+    $2->attr.symtbl_seq = symtbl.insert($2->attr.name);
+    symtbl.set_type($2->attr.name, $2->attr.symtbl_seq, cur->type);
+    $2->type = cur->type;
+    position += 4;
+    symtbl.table[$2->attr.name][$2->attr.symtbl_seq].position = position;
+    $$ = node; 
+}
+| params COMMA params {
     $$ = $1;
     $$->addSibling($3);
 }
@@ -149,27 +215,22 @@ RETURN_stmt
 
 declaration
 : T declare_id_list { 
-    // declare and init
-    NodeAttr* NA1 = new NodeAttr;
-    NodeAttr* NA2 = new NodeAttr;
-    Node* child2 = new Node($2->lineno, LIST_NODE, DECLARE_LIST, *NA1, Notype, parse_tree.node_seq++);
+    Node* child2 = new Node($2->lineno, LIST_NODE, DECLARE_LIST, *(new NodeAttr), Notype, parse_tree.node_seq++);
     child2->addChild($2);
-    Node* node = new Node($1->lineno, DECL_NODE, VAR_DECL, *NA2, $1->type, parse_tree.node_seq++);
+    Node* node = new Node($1->lineno, DECL_NODE, VAR_DECL, *(new NodeAttr), $1->type, parse_tree.node_seq++);
     node->addChild($1);
     node->addChild(child2);
     $$ = node; 
-    // decl->addChild(node);
 }
 | the_CONST T must_init_declare_id_list {
     NodeAttr* NA1 = new NodeAttr;
     NodeAttr* NA2 = new NodeAttr;
     Node* child3 = new Node($3->lineno, LIST_NODE, DECLARE_LIST, *NA1, Notype, parse_tree.node_seq++);
-    child3->addChild($2);
+    child3->addChild($3);
     Node* node = new Node($2->lineno, DECL_NODE, CONST_DECL, *NA2, $2->type, parse_tree.node_seq++);
-    node->addChild($1);
+    node->addChild($2);
     node->addChild(child3);
     $$ = node;
-    // decl->addChild(node);
 }
 ;
 
@@ -378,6 +439,45 @@ unmatched_if_stmt
 }
 ;
 
+printf_stmt
+: PRINTF LPAREN expr_list RPAREN {
+    $$ = $1;
+    Node* child1 = new Node($3->lineno, LIST_NODE, PRINT_LIST, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    child1->addChild($3);
+    $$->addChild(child1);
+}
+| PRINTF LPAREN STRING RPAREN{
+    $$ = $1;
+    $$->addChild($3);
+    $3->attr.symtbl_seq = symtbl.insert(print_content, $3->attr.valstr);
+    symtbl.set_type(print_content, $3->attr.symtbl_seq, String);
+}
+| PRINTF LPAREN STRING COMMA expr_list RPAREN {
+    $$ = $1;
+    $3->attr.symtbl_seq = symtbl.insert(print_content, $3->attr.valstr);
+    symtbl.set_type(print_content, $3->attr.symtbl_seq, String);
+    $$->addChild($3);
+    Node* child2 = new Node($5->lineno, LIST_NODE, PRINT_LIST, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    child2->addChild($5);
+    $$->addChild(child2);
+}
+;
+
+scanf_stmt
+: SCANF LPAREN STRING COMMA expr_list RPAREN {
+    $$ = $1;
+    $3->attr.symtbl_seq = symtbl.insert(scan_content, $3->attr.valstr);
+    symtbl.set_type(scan_content, $3->attr.symtbl_seq, String);
+    $$->addChild($3);
+    Node* child2 = new Node($5->lineno, LIST_NODE, SCAN_LIST, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    for(Node* p = $5; p; p = p->sibling)
+    {
+        child2->addChild(p->children[0]);
+    }
+    $$->addChild(child2);
+}
+;
+
 expr_stmt
 : expr {$$ = $1;}
 | ASSIGN_stmt {
@@ -395,50 +495,72 @@ expr
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr PLUS expr {
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr MINUS expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr MULT expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr DIV expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr AND expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr OR expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
 }
 | expr RELOP expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+    parse_tree.max_temp++;
+}
+| expr LPAREN RPAREN {
+    Node* node = new Node($1->lineno, EXPR_NODE, FUNC_EXPR, *(new NodeAttr), symtbl.table[$1->attr.name][$1->attr.symtbl_seq].return_type, parse_tree.node_seq++);
+    node->addChild($1);
+    $$ = node;
+    parse_tree.max_temp++;
+}
+| expr LPAREN expr_list RPAREN {
+    Node* node = new Node($1->lineno, EXPR_NODE, FUNC_EXPR, *(new NodeAttr), symtbl.table[$1->attr.name][$1->attr.symtbl_seq].return_type, parse_tree.node_seq++);
+    node->addChild($1);
+    Node* child2 = new Node($3->lineno, LIST_NODE, PARAM_LIST, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    child2->addChild($3);
+    node->addChild(child2);
+    $$ = node;
+    parse_tree.max_temp++;
+    parse_tree.max_temp++;
 }
 | DPLUS expr %prec UDPLUS {
     $$ = $2; $$->addChild($1); 
-
 }
 | expr DPLUS {
     $$ = $2; 
-    $$->addChild($1); 
-
+    $$->addChild($1);
 }
 | DMINUS expr %prec UDMINUS {
     $$ = $2; 
@@ -447,7 +569,6 @@ expr
 | expr DMINUS {
     $$ = $2; 
     $$->addChild($1); 
-
 }
 | POS expr {$$ = $1;$$->addChild($2);}
 | NOT expr {$$ = $1; $$->addChild($2);}
@@ -473,7 +594,11 @@ term
 CONST
 : INTEGER {$$ = $1;}
 | CHAR {$$ = $1;}
-| STRING %prec AFTER_COMMA {$$ = $1;}
+| STRING %prec AFTER_COMMA {
+    $$ = $1;
+    $1->attr.symtbl_seq = symtbl.insert(const_content, $1->attr.valstr);
+    symtbl.set_type(const_content, $1->attr.symtbl_seq, String);
+}
 | TRUE {$$ = $1;}
 | FALSE {$$ = $1;}
 ;
@@ -481,9 +606,8 @@ CONST
 expr_list
 : expr {$$ = $1;}
 | expr_list COMMA expr_list {
-    $$ = $2;
-    $$->addChild($1);
-    $$->addChild($3);
+    $$ = $1;
+    $$->addSibling($3);
 }
 ;
 

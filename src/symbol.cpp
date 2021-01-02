@@ -81,6 +81,14 @@ int symbol_table::insert(string name, int token)
 	return size;
 }
 
+int symbol_table::insert(string name, string content)
+{
+	int size = this->table[name].size();
+	this->table[name][size].content = content;
+	this->table[name][size].type = Notype;
+	return size;
+}
+
 // 获得token
 int symbol_table::gettoken(string name)
 {
@@ -122,4 +130,18 @@ int symbol_table::get_type(string name, int pos)
 	}
 	// 获得pos的类型
 	return table[name][pos].type;
+}
+
+string symbol_table::get_content(string name, int pos)
+{
+	if(this->table.count(name) <= 0)
+		return "";
+	// 位置有问题就退出
+	if (pos < 0 || pos >= int(this->table[name].size()))
+	{
+		cerr << "Bad identifier" << endl;
+		return "";
+	}
+	// 获得pos的类型
+	return table[name][pos].content;
 }

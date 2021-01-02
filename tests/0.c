@@ -7,6 +7,8 @@ if(!2==3){
     a = a+2;
     a = a + 3;
 }
-// while(a==b){
-//     printf(a);
-// }
+while(a==b){
+    printf("hello world");
+    printf(a);
+    printf("result is: %d\n", c);
+}

@@ -35,17 +35,19 @@ enum Expr_Type
 	TYPE_EXPR = 0,  // 类型表达式
 	OP_EXPR,  // 运算表达式
     CONST_EXPR,  // 常量表达式
-	ID_EXPR  // 标识符
+	ID_EXPR,  // 标识符
+	FUNC_EXPR,  // 函数表达式
 };
 
 // 变量声明
-enum  Decl_Type
+enum Decl_Type
 {
 	VAR_DECL = 0,  // 变量声明
 	CONST_DECL,  // 常量声明
 	FUNC_DECL,  // 函数声明
 	STRUCT_DECL,  // 结构声明
-	COMP_DECL
+	COMP_DECL,
+	USELESS_DECL, 
 };
 
 // 列表类型
@@ -61,6 +63,7 @@ enum
 {
 	CONST_VAR = 0,
 	VAR_VAR,
+	FUNC,
 };
 
 // 变量/常量类型
@@ -71,6 +74,7 @@ enum TYPE
 	Boolean,  // 布尔类型
 	Char,  // 字符类型
 	String,  // 字符串类型
+	Function,  // 函数类型
 };
 
 // 操作数类型
@@ -158,6 +162,7 @@ public:
 	Node *root;  // 根
 	int node_seq = 0;  // 节点序号
 	int temp_var_seq = 0;  // 临时变量序号
+	int max_temp = 0;
 	int label_seq = 0;  // 标签序号
 
 private:
@@ -167,11 +172,14 @@ private:
 	void recursive_get_label(Node *t);  // 递归获得标签
 	void stmt_get_label(Node *t);  // 语句获得标签
 	void expr_get_label(Node *t);  // 表达式获得标签
+	void decl_get_label(Node *t);
 	void gen_header(ostream &out);  // 生成asm代码头部
-	void gen_decl(ostream &out, Node *t);  // 生成声明部分
+	void gen_decl(ostream &out);  // 生成声明部分
 	void recursive_gen_code(ostream &out, Node *t);  // 递归生成代码
 	void stmt_gen_code(ostream &out, Node *t);  // 语句生成asm语句
 	void expr_gen_code(ostream &out, Node *t);  // 表达式生成asm语句
+	void decl_gen_code(ostream &out, Node *t);
+	void func_gen_code(ostream &out, Node *t);
 
 public:
 	Node *NewRoot(int kind, int kind_kind, NodeAttr attr, int type, Node* child = NULL, int this_lineno = lineno);  // 新建新的根
