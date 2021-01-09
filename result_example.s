@@ -7,15 +7,6 @@
 _a0:
 	.zero	4
 	.align	4
-t0:
-	.zero	4
-	.align	4
-t1:
-	.zero	4
-	.align	4
-t2:
-	.zero	4
-	.align	4
 
 
 # your asm code here

@@ -13,8 +13,8 @@
     int param[MAX_PARAM] = {-1};
     int size = 0;
     int position = 0;
-
-    // Node* decl = new Node(0, DECL_NODE, COMP_DECL, *(new NodeAttr), Notype, 0);
+    int STACK_SIZE = 0;
+    int for_seq = 0;
 %}
 
 %token T_CHAR T_INT T_STRING T_BOOL T_VOID
@@ -71,8 +71,10 @@
 program
 : statements 
 {
+    // cout << "开始生成树根" << endl;
     NodeAttr *NA = new NodeAttr;
     root = parse_tree.NewRoot(STMT_NODE, COMP_STMT, *NA, Notype, $1);
+    // cout << "树根生成完毕" << endl;
 }
 ;
 
@@ -119,6 +121,13 @@ function
     child->addChild($3);
     node->addChild(child);
     $$ = node;
+    Node* p = $1->children[2];
+    for(int i = 0; i < size && p; i++)
+    {
+        symtbl.match(p->children[i]->children[1]->attr.name);
+    }
+    $$->temp_stack_size = STACK_SIZE;
+    STACK_SIZE = 0;
 }
 ;
 
@@ -132,7 +141,6 @@ funtion_head
     {
         symtbl.table[$2->attr.name][$2->attr.symtbl_seq].param_type[i] = param[i];
     }
-    size = 0;
     position = 0;
 
     Node* node = new Node($1->lineno, DECL_NODE, FUNC_DECL, *(new NodeAttr), Notype, parse_tree.node_seq++);
@@ -178,6 +186,28 @@ params
 }
 ;
 
+ARRAY
+: IDENTIFIER LBRACKET expr RBRACKET {
+    if(symtbl.lookup($1->attr.name) != -1)
+    {
+        $1->attr.symtbl_seq = symtbl.lookup($1->attr.name);
+        $1->type = symtbl.get_type($1->attr.name, $1->attr.symtbl_seq);
+    }
+
+    $$ = $1;
+    $1->kind_kind = ARRAY_EXPR;
+    $$->addChild($2);
+    $2->addChild($3);
+
+}
+| ARRAY LBRACKET expr RBRACKET {
+    $$ = $1;
+    $$->addChild($2);
+    $2->addChild($3);
+}
+;
+
+
 ASSIGN_stmt
 : expr PLUS_ASSIGN expr {
     $$ = $2;
@@ -203,6 +233,41 @@ ASSIGN_stmt
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
+}
+| expr PLUS_ASSIGN ASSIGN_stmt {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| expr SUB_ASSIGN ASSIGN_stmt {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| expr MULT_ASSIGN ASSIGN_stmt {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| expr DIV_ASSIGN ASSIGN_stmt {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| expr EQ_ASSIGN ASSIGN_stmt {
+    $$ = $2;
+    $$->addChild($1);
+    $$->addChild($3);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 ;
 
@@ -250,6 +315,39 @@ declare_id_list
     symtbl.set_type($1->attr.name, $1->attr.symtbl_seq, cur->type);
     $1->type = cur->type;
 }
+| MULT IDENTIFIER {
+    $$ = $1;
+    $1->attr.op = OP_STAR;
+    $$->addChild($2);
+    $2->attr.symtbl_seq = symtbl.insert($2->attr.name, VAR_VAR);
+    symtbl.set_type($2->attr.name, $2->attr.symtbl_seq, cur->type);
+    $2->type = cur->type;
+    $2->stars = 1;
+    symtbl.table[$2->attr.name][$2->attr.symtbl_seq].stars = $2->stars;
+}
+| ARRAY {
+    $$ = $1;
+    $$->attr.symtbl_seq = symtbl.insert($1->attr.name, VAR_VAR);
+    // cout << "名字为" << $1->attr.name << endl;
+    // cout << "号码为" << $$->attr.symtbl_seq << endl;
+    symtbl.set_type($1->attr.name, $1->attr.symtbl_seq, cur->type);
+    $1->type = cur->type;
+    int i = 0;
+    for(Node* p = $1->children[0]; p; p = p->sibling, i++)
+    {
+        // $1->stars += 1;
+        $1->numbers *= p->children[0]->attr.vali;
+        symtbl.table[$1->attr.name][$$->attr.symtbl_seq].dimension.push_back(p->children[0]->attr.vali);
+        symtbl.table[$1->attr.name][$$->attr.symtbl_seq].adds.push_back(1);
+        // cout << symtbl.table[$1->attr.name][$$->attr.symtbl_seq].adds[i] << endl;
+        for(int j = 0; j < i; j++)
+        {
+            symtbl.table[$1->attr.name][$$->attr.symtbl_seq].adds[j] *= p->children[0]->attr.vali;
+        }
+    }
+    // symtbl.table[$1->attr.name][$$->attr.symtbl_seq].stars = $1->stars;
+    symtbl.table[$1->attr.name][$$->attr.symtbl_seq].numbers = $1->numbers;
+}
 | declare_id_list COMMA declare_id_list {$$ = $1; $$->addSibling($3);}
 ;
 
@@ -285,14 +383,16 @@ while_stmt
 ;
 
 for_stmt
-: FOR LPAREN ASSIGN_stmt SEMICOLON expr SEMICOLON expr RPAREN statement {
+: FOR LPAREN ASSIGN_stmt SEMICOLON expr SEMICOLON expr_stmt RPAREN statement {
+    for_seq++;
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
     $$->addChild($7);
     $$->addChild($9);
 }
-| FOR LPAREN declaration SEMICOLON expr SEMICOLON expr RPAREN statement {
+| FOR LPAREN declaration SEMICOLON expr SEMICOLON expr_stmt RPAREN statement {
+    for_seq++;
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
@@ -306,11 +406,15 @@ for_stmt
             name = child->children[0]->attr.name;
         else
             name = child->attr.name;
+        
+        int seq = symtbl.lookup(name);
+        symtbl.table[name][seq].special = for_seq;
         symtbl.match(name);
         child = child->sibling;
     }
 }
-| FOR LPAREN ASSIGN_stmt SEMICOLON expr SEMICOLON expr RPAREN LBRACE statements RBRACE {
+| FOR LPAREN ASSIGN_stmt SEMICOLON expr SEMICOLON expr_stmt RPAREN LBRACE statements RBRACE {
+    for_seq++;
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
@@ -320,7 +424,8 @@ for_stmt
     child4->addChild($10);
     $$->addChild(child4);
 }
-| FOR LPAREN declaration SEMICOLON expr SEMICOLON expr RPAREN LBRACE statements RBRACE {
+| FOR LPAREN declaration SEMICOLON expr SEMICOLON expr_stmt RPAREN LBRACE statements RBRACE {
+    for_seq++;
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
@@ -337,18 +442,27 @@ for_stmt
             name = child->children[0]->attr.name;
         else
             name = child->attr.name;
+
+        int seq = symtbl.lookup(name);
+        symtbl.table[name][seq].special = for_seq;
         symtbl.match(name);
         child = child->sibling;
     }
 }
-| FOR LPAREN SEMICOLON expr SEMICOLON expr RPAREN statement {
+| FOR LPAREN SEMICOLON expr SEMICOLON expr_stmt RPAREN statement {
+    for_seq++;
     $$ = $1;
+    Node* node = new Node($1->lineno, EMPTY_NODE, 0, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    $$->addChild(node);
     $$->addChild($4);
     $$->addChild($6);
     $$->addChild($8);
 }
-| FOR LPAREN SEMICOLON expr SEMICOLON expr RPAREN LBRACE statements RBRACE {
+| FOR LPAREN SEMICOLON expr SEMICOLON expr_stmt RPAREN LBRACE statements RBRACE {
+    for_seq++;
     $$ = $1;
+    Node* node = new Node($1->lineno, EMPTY_NODE, 0, *(new NodeAttr), Notype, parse_tree.node_seq++);
+    $$->addChild(node);
     $$->addChild($4);
     $$->addChild($6);
     NodeAttr* NA = new NodeAttr;
@@ -360,24 +474,24 @@ for_stmt
 
 
 matched_if_stmt
-: IF LPAREN expr RPAREN matched_stmt ELSE matched_stmt {
+: IF LPAREN expr_stmt RPAREN matched_stmt ELSE matched_stmt {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
-    $$->addSibling($6);
+    $$->addChild($6);
     $6->addChild($7);
 }
-| IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE matched_stmt {
+| IF LPAREN expr_stmt RPAREN LBRACE statements RBRACE ELSE matched_stmt {
     $$ = $1;
     $$->addChild($3);
     NodeAttr* NA = new NodeAttr;
     Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child2->addChild($6);
     $$->addChild(child2);
-    $$->addSibling($8);
+    $$->addChild($8);
     $8->addChild($9);
 }
-| IF LPAREN expr RPAREN matched_stmt ELSE LBRACE statements RBRACE {
+| IF LPAREN expr_stmt RPAREN matched_stmt ELSE LBRACE statements RBRACE {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
@@ -386,9 +500,10 @@ matched_if_stmt
     Node* child3 = new Node($8->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child3->addChild($8);
     $6->addChild(child3);
-    $$->addSibling($6);
+    $$->addChild($6);
 }
-| IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
+| IF LPAREN expr_stmt RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
+    // cout << "进入了一个完整的ifelse" << endl;
     $$ = $1;
     $$->addChild($3);
 
@@ -401,19 +516,19 @@ matched_if_stmt
     Node* child3 = new Node($10->lineno, STMT_NODE, COMP_STMT, *NA2, Notype, parse_tree.node_seq++);
     child3->addChild($10);
     $8->addChild(child3);
-    $$->addSibling($8);
+    $$->addChild($8);
 }
 ;
 
 unmatched_if_stmt
-: IF LPAREN expr RPAREN matched_stmt ELSE unmatched_stmt {
+: IF LPAREN expr_stmt RPAREN matched_stmt ELSE unmatched_stmt {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
-    $$->addSibling($6);
+    $$->addChild($6);
     $6->addChild($7);
 }
-| IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE unmatched_stmt {
+| IF LPAREN expr_stmt RPAREN LBRACE statements RBRACE ELSE unmatched_stmt {
     $$ = $1;
     $$->addChild($3);
 
@@ -421,15 +536,15 @@ unmatched_if_stmt
     Node* child2 = new Node($6->lineno, STMT_NODE, COMP_STMT, *NA, Notype, parse_tree.node_seq++);
     child2->addChild($6);
     $$->addChild(child2);
-    $$->addSibling($8);
+    $$->addChild($8);
     $8->addChild($9);
 }
-| IF LPAREN expr RPAREN statement {
+| IF LPAREN expr_stmt RPAREN statement {
     $$ = $1;
     $$->addChild($3);
     $$->addChild($5);
 }
-| IF LPAREN expr RPAREN LBRACE statements RBRACE %prec IFX {
+| IF LPAREN expr_stmt RPAREN LBRACE statements RBRACE %prec IFX {
     $$ = $1;
     $$->addChild($3);
     NodeAttr* NA = new NodeAttr;
@@ -479,9 +594,14 @@ scanf_stmt
 ;
 
 expr_stmt
-: expr {$$ = $1;}
+: expr {
+    $$ = $1; 
+    // cout << "生成了表达式语句" << endl;
+}
 | ASSIGN_stmt {
     $$ = $1;
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr_stmt COMMA expr_stmt {
     $$ = $2;
@@ -496,54 +616,64 @@ expr
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr PLUS expr {
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr MINUS expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr MULT expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr DIV expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr AND expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr OR expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr RELOP expr{
     $$ = $2;
     $$->addChild($1);
     $$->addChild($3);
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
+    // cout << "检测到不等号" << endl;
 }
 | expr LPAREN RPAREN {
     Node* node = new Node($1->lineno, EXPR_NODE, FUNC_EXPR, *(new NodeAttr), symtbl.table[$1->attr.name][$1->attr.symtbl_seq].return_type, parse_tree.node_seq++);
     node->addChild($1);
     $$ = node;
     parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | expr LPAREN expr_list RPAREN {
     Node* node = new Node($1->lineno, EXPR_NODE, FUNC_EXPR, *(new NodeAttr), symtbl.table[$1->attr.name][$1->attr.symtbl_seq].return_type, parse_tree.node_seq++);
@@ -553,10 +683,11 @@ expr
     node->addChild(child2);
     $$ = node;
     parse_tree.max_temp++;
-    parse_tree.max_temp++;
+    STACK_SIZE += 4;
 }
 | DPLUS expr %prec UDPLUS {
-    $$ = $2; $$->addChild($1); 
+    $$ = $2; 
+    $$->addChild($1); 
 }
 | expr DPLUS {
     $$ = $2; 
@@ -570,10 +701,41 @@ expr
     $$ = $2; 
     $$->addChild($1); 
 }
-| POS expr {$$ = $1;$$->addChild($2);}
-| NOT expr {$$ = $1; $$->addChild($2);}
-| MINUS expr %prec UMINUS { $$ = $1; $$->addChild($2);}
-| LPAREN expr_stmt RPAREN {$$ = $1; $$->addChild($2); }
+| POS expr {
+    $$ = $1;
+    $$->addChild($2);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| MULT expr {
+    $1->attr.op = OP_STAR;
+    $$ = $1;
+    $$->addChild($2);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| NOT expr {
+    $$ = $1; 
+    $$->addChild($2);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+    // cout << "检测到非" << endl;
+}
+| MINUS expr %prec UMINUS { 
+    $$ = $1; 
+    $$->addChild($2);
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
+| PLUS expr %prec UMINUS { $$ = $2;}
+| LPAREN expr_stmt RPAREN {
+    $$ = $2; // $$->addChild($2); 
+}
+| ARRAY {
+    $$ = $1;
+    parse_tree.max_temp++;
+    STACK_SIZE += 4;
+}
 | term {$$ = $1;}
 ;
 
@@ -593,7 +755,9 @@ term
 
 CONST
 : INTEGER {$$ = $1;}
-| CHAR {$$ = $1;}
+| CHAR {
+    $$ = $1;
+}
 | STRING %prec AFTER_COMMA {
     $$ = $1;
     $1->attr.symtbl_seq = symtbl.insert(const_content, $1->attr.valstr);

@@ -5,6 +5,7 @@
 int lineno = 1;  // 行号
 extern tree parse_tree;
 extern symbol_table symtbl;
+extern int STACK_SIZE;
 Node* cur;
 %}
 
@@ -29,7 +30,7 @@ RELOP           [>]|[<]|[>][=]|[<][=]|[=][=]|[!][=]
 
 INTEGER [0-9]+
 
-CHAR \'.?\'
+CHAR [\'].[\']|[\']\\n[\']|[\']\\t[\']
 STRING \".+\"
 
 IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
@@ -133,7 +134,7 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return DIV;
 }
 "&&" {
-    cout<<"读到了&&"<<endl;
+    // cout<<"读到了&&"<<endl;
     NodeAttr* NA = new NodeAttr(OP_AND);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Boolean, parse_tree.node_seq++);
     yylval = node;
@@ -153,7 +154,7 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 }
 "&" {
     NodeAttr* NA = new NodeAttr(OP_POS);
-    Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Notype, parse_tree.node_seq++);
+    Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Integer, parse_tree.node_seq++);
     yylval = node;
     return POS;
 }
@@ -164,7 +165,7 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
     return MOD;
 }
 "." {
-        NodeAttr* NA = new NodeAttr(OP_DOT);
+    NodeAttr* NA = new NodeAttr(OP_DOT);
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Notype, parse_tree.node_seq++);
     yylval = node;
     return DOT;
@@ -286,17 +287,20 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 
 {RELOP} {
     NodeAttr* NA = new NodeAttr;
-    if(!memcmp(yytext, "==", 2))
+    if(yytext[0] == '=' && yytext[1] == '=')
         NA->op = OP_EQ;
-    else if(!memcmp(yytext, "!=", 2))
+    else if(yytext[0] == '!' && yytext[1] == '=')
+    {
+        // cout << "检测到!=" << endl;
         NA->op = OP_NEQ;
-    else if(!memcmp(yytext, ">", 2))
+    }
+    else if(yytext[0] == '>' && strlen(yytext) == 1)
         NA->op = OP_L;
-    else if(!memcmp(yytext, ">=", 2))
+    else if(yytext[0] == '>' && strlen(yytext) == 2 && yytext[1] == '=')
         NA->op = OP_LEQ;
-    else if(!memcmp(yytext, "<", 2))
+    else if(yytext[0] == '<' && strlen(yytext) == 1)
         NA->op = OP_S;
-    else if(!memcmp(yytext, "<=", 2))
+    else if(yytext[0] == '<' && strlen(yytext) == 2 && yytext[1] == '=')
         NA->op = OP_SEQ;
 
     Node* node = new Node(lineno, EXPR_NODE, OP_EXPR, *NA, Boolean, parse_tree.node_seq++);
@@ -314,7 +318,23 @@ IDENTIFIER [[:alpha:]_][[:alpha:][:digit:]_]*
 }
 
 {CHAR} {
-    NodeAttr* NA = new NodeAttr(yytext[0]);
+    NodeAttr* NA;
+    if((yytext[1] == char(92)) && (yytext[2] != char(39)))
+    {
+        if(yytext[2] == 'n')
+        {
+            NA = new NodeAttr('\n');
+        }
+        else if(yytext[2] == 't')
+        {
+            NA = new NodeAttr('\t');
+        }
+    }
+    else
+    {
+        NA = new NodeAttr(yytext[1]);
+    }
+    // cout << NA->valc << endl;
     Node* node = new Node(lineno, EXPR_NODE, CONST_EXPR, *NA, Char, parse_tree.node_seq++);
     yylval = node;
     return CHAR;

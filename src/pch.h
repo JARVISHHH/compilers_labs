@@ -21,6 +21,7 @@
 
 #define MAX_ID 1024
 #define MAX_PARAM 10
+
 #define print_content string("_STR_PRINT")
 #define scan_content string("_STR_SCAN")
 #define const_content string("_STR_CONST")

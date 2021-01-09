@@ -9,8 +9,8 @@ void symbol_table::match()
     {
         for(int i = 0; i < int(this->table[this->iter->first].size()); i++)
 		{
-			if(this->table[this->iter->first][i].unmatched >= 0)
-				this->table[this->iter->first][i].unmatched--;
+			// if(this->table[this->iter->first][i].unmatched >= 0)
+			this->table[this->iter->first][i].unmatched--;
 		}
 		this->iter++;
     }
@@ -23,14 +23,36 @@ void symbol_table::unmatch()
     {
         for(int i = 0; i < int(this->table[this->iter->first].size()); i++)
 		{
-			if(this->table[this->iter->first][i].unmatched >= 0)
-				this->table[this->iter->first][i].unmatched++;
+			// if(this->table[this->iter->first][i].unmatched >= 0)
+			this->table[this->iter->first][i].unmatched++;
 		}
 		this->iter++;
     }
 }
 
 void symbol_table::match(string name)
+{
+	this->iter = this->table.begin();
+	int seq = -1;
+    while(this->iter != this->table.end())
+    {
+		if(this->iter->first == name)
+		{
+			for(int i = 0; i < int(this->table[this->iter->first].size()); i++)
+			{
+				if(this->table[this->iter->first][i].unmatched >= 0)
+					seq = i;
+			}
+			if(seq >= 0)
+			{
+				this->table[this->iter->first][seq].unmatched--;
+			}
+		}
+		this->iter++;
+    }
+}
+
+void symbol_table::unmatch(string name)
 {
 	this->iter = this->table.begin();
 	int seq = -1;
@@ -62,6 +84,17 @@ int symbol_table::lookup(string name)
 		if (table[name][i].unmatched >= 0)
 			result = i;
 	return result;
+}
+
+// 查看是否有重定义的
+bool symbol_table::repeat(string name, int pos)
+{
+	if(this->table.count(name) <= 0) return 0;
+	if(int(this->table[name].size()) < pos || pos <= 0) return 0;
+	if(this->table[name][pos].unmatched == this->table[name][pos-1].unmatched)
+		if(this->table[name][pos].special == this->table[name][pos-1].special)
+			return 1;
+	return 0;
 }
 
 // 插入一个符号

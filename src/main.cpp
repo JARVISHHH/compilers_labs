@@ -5,6 +5,7 @@
 extern FILE *yyin;  // yacc缺省输入
 extern tree parse_tree;
 extern int yyparse();
+extern bool wrong;
 
 using namespace std;
 int main(int argc, char *argv[])

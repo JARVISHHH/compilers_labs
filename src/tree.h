@@ -13,6 +13,7 @@ enum Node_Type
 	EXPR_NODE,  // 表达式节点（包括赋值）
 	DECL_NODE,  // 声明节点
 	LIST_NODE,  // 列表节点
+	EMPTY_NODE
 };
 
 // 语句类型
@@ -37,6 +38,7 @@ enum Expr_Type
     CONST_EXPR,  // 常量表达式
 	ID_EXPR,  // 标识符
 	FUNC_EXPR,  // 函数表达式
+	ARRAY_EXPR,  // 数组表达式
 };
 
 // 变量声明
@@ -45,9 +47,7 @@ enum Decl_Type
 	VAR_DECL = 0,  // 变量声明
 	CONST_DECL,  // 常量声明
 	FUNC_DECL,  // 函数声明
-	STRUCT_DECL,  // 结构声明
-	COMP_DECL,
-	USELESS_DECL, 
+	// COMP_DECL,
 };
 
 // 列表类型
@@ -75,6 +75,7 @@ enum TYPE
 	Char,  // 字符类型
 	String,  // 字符串类型
 	Function,  // 函数类型
+	POSITION,  // 指针类型
 };
 
 // 操作数类型
@@ -106,6 +107,7 @@ enum OperatorType
     OP_DMINUS,  // --
     OP_MOD,  // %
     OP_POS,  // &
+	OP_STAR,  // 用于寻址的*
     OP_COMMA,  // ,
 };
 
@@ -147,7 +149,11 @@ struct Node
 	int type = Notype;  // 节点类型
 	int seq;  // 节点序号
 	int temp_var;  // 临时变量
+	int temp_var_pos = -1;  // 临时变量位置
+	int stars = 0;  // 指针个数
+	int numbers = 1;  // 数组大小
 	Label label;  // 节点标签
+	int temp_stack_size = 0;  // 如果是函数的话，需要申请的堆栈大小
 
 	Node();
 	Node(int lineno, int kind, int kind_kind, NodeAttr NA, int type, int seq);

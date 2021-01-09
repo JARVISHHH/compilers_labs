@@ -3,7 +3,142 @@
 extern int lineno;  // 当前行号
 extern symbol_table symtbl;  // 符号表
 
+int t_position = 0;
+bool in_function = 0;
+
+bool wrong = 0;
+
+extern int STACK_SIZE;
+
 tree parse_tree;  // 解析树
+
+void movl_to_eax(ostream &out, Node *e1)
+{
+	// 把运算符1的值先给%eax
+	out << "\tmovl ";
+	// 运算符1的类型的类型是标识符
+	if (e1->kind_kind == ID_EXPR)
+	{
+		if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+			out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+		else
+			out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+		// 输出标识符的名称
+		// out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+	}
+	// 如果运算符1的类型的类型是常量
+	else if (e1->kind_kind == CONST_EXPR)
+		// 直接输出数值
+		out << "$" << e1->attr.vali;
+	// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
+	else
+	{
+		if(in_function)
+		{
+			out << e1->temp_var_pos << "(%esp)";
+		}
+		else
+			out << "t" << e1->temp_var;
+	}
+	out << ", %eax" <<endl;
+}
+
+void movl_to_other_register(ostream &out, Node *e1, string reg)
+{
+	// 把运算符1的值先给%eax
+	out << "\tmovl ";
+	// 运算符1的类型的类型是标识符
+	if (e1->kind_kind == ID_EXPR)
+	{
+		if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+			out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+		else
+			out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+		// 输出标识符的名称
+		// out << "_" << e1->attr.name << e1->attr.symtbl_seq;
+	}
+	// 如果运算符1的类型的类型是常量
+	else if (e1->kind_kind == CONST_EXPR)
+		// 直接输出数值
+		out << "$" << e1->attr.vali;
+	// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
+	else
+	{
+		if(in_function)
+		{
+			out << e1->temp_var_pos << "(%esp)";
+		}
+		else
+			out << "t" << e1->temp_var;
+	}
+	out << ", " << reg <<endl;
+}
+
+void op_to_eax(ostream &out, Node *e2, string op, bool two_e = 1)
+{
+	out << "\t" << op << " ";
+	// 如果运算符2的类型的类型是标识符
+	if (e2->kind_kind == ID_EXPR)
+	{
+		if(symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position)
+			out << symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+		else
+			out << "_" << e2->attr.name << e2->attr.symtbl_seq;
+	}
+	// 如果是常量
+	else if (e2->kind_kind == CONST_EXPR)
+		// 输出数值
+		out << "$" << e2->attr.vali;
+	// 以上情况都不是，就输出临时变量
+	else
+	{
+		if(in_function)
+		{
+			out << e2->temp_var_pos << "(%esp)";
+		}
+		else
+			out << "t" << e2->temp_var;
+	}
+	if(two_e)
+		out << ", %eax";  // 将值赋给%eax
+	out << endl;
+}
+
+void save_result(ostream &out, Node* t)
+{
+
+	if(t->kind_kind == ID_EXPR)
+	{
+		if(symtbl.table[t->attr.name][t->attr.symtbl_seq].position)
+			out << "\tmovl %eax, " << symtbl.table[t->attr.name][t->attr.symtbl_seq].position + STACK_SIZE << "(%esp)" << endl;
+		else
+			out << "\tmovl %eax, _" << t->attr.name << t->attr.symtbl_seq << endl;
+	}
+
+	// 把结果给t的临时变量
+	else if(in_function && t->temp_var_pos < 0)
+	{
+		// out << "t_position" << endl;
+		t->temp_var_pos = t_position;
+		t_position -= 4;
+		out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;;
+	}
+	else if (in_function)
+	{
+		out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;
+	}
+	else
+		out << "\tmovl %eax, t" << t->temp_var << endl;
+}
+
+bool com_str_char(string name1, char* name2, int size)
+{
+	if((int)name1.length() < size) return 0;
+	for(int i = 0; i < size; i++)
+		if(name1[i] != name2[i])
+			return 0;
+	return 1;
+}
 
 // 构造函数
 Node::Node()
@@ -61,7 +196,6 @@ void Node::addSibling(Node* sibling){
 void tree::type_check(Node *t)
 {
 	// type check, write your own code here
-
 	// 如果当前节点是语句节点
 	if (t->kind == STMT_NODE)
 	{
@@ -73,10 +207,11 @@ void tree::type_check(Node *t)
 			break;
 		case WHILE_STMT:
 			type_check(t->children[0]);
-			// 如果孩子节点(也就是循环判断语句)不是布尔型的，类型错误
-			if (t->children[0]->type != Boolean)
+			// 如果孩子节点(也就是循环判断语句)不是布尔型和整型的，类型错误
+			if (t->children[0]->type != Boolean && t->children[0]->type != Integer)
 			{
-				cerr << "Bad boolean type at line: " << t->lineno << endl;
+				cerr << "Bad boolean && integer type at line: " << t->lineno << endl;
+				wrong = 1;
 			}
 			else
 			{
@@ -88,9 +223,10 @@ void tree::type_check(Node *t)
 			type_check(t->children[0]);
 			type_check(t->children[1]);
 			// 如果循环判断语句不是布尔型的，类型错误
-			if(t->children[1]->type != Boolean)
+			if(t->children[1]->type != Boolean && t->children[0]->type != Integer)
 			{
-				cerr << "Bad boolean type at line: " << t->lineno << endl;
+				cerr << "Bad boolean && integer type at line: " << t->lineno << endl;
+				wrong = 1;
 			}
 			else
 			{
@@ -102,9 +238,10 @@ void tree::type_check(Node *t)
 		case IF_STMT:
 			type_check(t->children[0]);
 			// 如果判断语句不是布尔型的，类型错误
-			if(t->children[0]->type != Boolean)
+			if(t->children[0]->type != Boolean && t->children[0]->type != Integer)
 			{
-				cerr << "Bad boolean type at line: " << t->lineno << endl;
+				cerr << "Bad boolean && integer type at line: " << t->lineno << endl;
+				wrong = 1;
 			}
 			else
 			{
@@ -131,12 +268,13 @@ void tree::type_check(Node *t)
 			{
 			case OP_ASSIGN:
 				if(t->children[0]->type != t->children[1]->type)
+				{
 					cerr << "Bad type at line: " << t->lineno << endl;
+					wrong = 1;
+				}
 				t->type = t->children[0]->type;
 				break;
 			case OP_EQ:
-				// if(t->children[0]->type != t->children[1]->type)
-				// 	cerr << "Bad type at line: " << t->lineno << endl;
 				t->type = Boolean;
 				break;
 			case OP_NOT:
@@ -144,19 +282,76 @@ void tree::type_check(Node *t)
 				break;
 			case OP_DPLUS:
 				if(t->children[0]->type != Integer)
+				{
 					cerr << "Bad integer type at line: " << t->lineno << endl;
+					wrong = 1;
+				}
 				t->type = Integer;
 				break;
 			case OP_DMINUS:
 				if(t->children[0]->type != Integer)
+				{
 					cerr << "Bad integer type at line: " << t->lineno << endl;
+					wrong = 1;
+				}	
 				t->type = Integer;
 				break;
 			default:
 				if(t->children[0]->type != Integer || (t->children[1] != nullptr && t->children[1]->type != Integer))
+				{
 					cerr << "Bad integer type at line: " << t->lineno << endl;
-				// t->type = Integer;
+					wrong = 1;
+				}
 			}
+		}
+		else if(t->kind_kind == ID_EXPR)
+		{
+			// cout << t->attr.name << endl;
+			if(t->attr.symtbl_seq < 0)
+			{	
+				cerr << "undefined identifier in line: " << t->lineno << endl;
+				wrong = 1;
+			}
+			// cout << symtbl.lookup(t->attr.name) << endl;
+		}
+	}
+	else if(t->kind == DECL_NODE)
+	{
+		switch (t->kind_kind)
+		{
+		case FUNC_DECL:
+			if(t->children[2])
+			{
+				type_check(t->children[2]);
+			}
+			else
+			{
+				type_check(t->children[1]);
+			}
+			break;
+		default:
+			for(Node* p = t->children[1]->children[0]; p; p = p->sibling)
+			{	
+				if(p->kind_kind == OP_EXPR)
+				{
+					if(symtbl.repeat(p->children[0]->attr.name, p->children[0]->attr.symtbl_seq))
+					{
+						cerr << "identifier redeclared at lineno: " << p->children[0]->lineno << endl;
+						wrong = 1;
+					}
+					type_check(p);
+				}
+				else
+				{
+					if(symtbl.repeat(p->attr.name, p->attr.symtbl_seq))
+					{
+						cerr << "identifier redeclared at lineno: " << p->lineno << endl;
+						wrong = 1;
+					}
+				}
+				
+			}
+			break;
 		}
 	}
 	/* ... */
@@ -254,9 +449,10 @@ void tree::stmt_get_label(Node *t)
 				recursive_get_label(p);  // 递归获得p的标签
 			}
 			// 整体的下一个标签等于最后的下一个标签
-			t->label.next_label = last->label.next_label;
+			if(t->label.next_label == "")
+				t->label.next_label = last->label.next_label;
 			// 如果t有兄弟
-			if (t->sibling)
+			if (t->sibling && t->sibling->label.begin_label == "")
 				// t的兄弟的开始标签等于t的下一个标签
 				t->sibling->label.begin_label = t->label.next_label;
 		}
@@ -264,6 +460,7 @@ void tree::stmt_get_label(Node *t)
 	// 循环语句
 	case WHILE_STMT:
 		{
+			// cout << "有检测到循环" << endl;
 			Node *e = t->children[0];  // 第一个孩子(判断条件)
 			Node *s = t->children[1];  // 第二个孩子(循环体)
 
@@ -288,10 +485,20 @@ void tree::stmt_get_label(Node *t)
 			recursive_get_label(s);
 			break;
 		}
-	case IF_STMT:
+	case FOR_STMT:
 		{
-			Node *e = t->children[0];  // 第一个孩子(判断条件)
-			Node *s = t->children[1];  // 第二个孩子(循环体)
+			// Node *d = t->children[0];
+			Node *e = t->children[1];  // 第2个孩子(判断条件)
+			Node *c = t->children[2];  // 第3个孩子(改变)
+			Node *s = t->children[3];  // 第4个孩子(循环体)
+
+			// 如果循环语句的开始标签为空，则新建一个开始标签（难道不是必定为空吗？）
+			if (e->label.begin_label == "")
+				e->label.begin_label = new_label();
+
+			// s->label.next_label = c->label.begin_label;
+			c->label.next_label = e->label.begin_label;
+			// s->label.next_label = t->label.begin_label;  // 循环体作为整体（即循环体全部运行结束后）的下一句就是循环语句的开始
 
 			// 新建循环体的开始标签和判断条件的真值标签
 			// s->label.begin_label = e->label.true_label = new_label();
@@ -301,13 +508,50 @@ void tree::stmt_get_label(Node *t)
 				t->label.next_label = new_label();
 			// 判断条件为假时，标签为循环语句的下一标签
 			e->label.false_label = t->label.next_label;
-			s->label.next_label = t->label.next_label;  // 循环体作为整体（即循环体全部运行结束后）的下一句就是循环语句的开始
 			// 如果t有兄弟（即还有下一个语句块），那么这个语句块的开始标签就是t的下一个标签
 			if (t->sibling)
 				t->sibling->label.begin_label = t->label.next_label;
 			// 递归获得两个孩子的标签
 			recursive_get_label(e);
 			recursive_get_label(s);
+			break;
+		}
+	case IF_STMT:
+		{
+			Node *e = t->children[0];  // 第一个孩子(判断条件)
+			Node *s = t->children[1];  // 第二个孩子(循环体)
+			Node *have_else = t->children[2]; // 第三个孩子(else)
+
+			// 如果循环语句的下一个标签为空，则新建标签
+			if (t->label.next_label == "")
+				t->label.next_label = new_label();
+			if(have_else)
+			{
+				
+				have_else->label.next_label = t->label.next_label;
+				s->label.next_label = t->label.next_label;
+				
+				if(have_else->label.begin_label == "")
+					have_else->label.begin_label = new_label();
+				
+				e->label.false_label = have_else->label.begin_label;
+				
+			}
+			else
+			{
+				// 判断条件为假时，标签为循环语句的下一标签
+				e->label.false_label = t->label.next_label;
+				s->label.next_label = t->label.next_label;  // 循环体作为整体（即循环体全部运行结束后）的下一句就是循环语句的开始
+			}
+			// 如果t有兄弟（即还有下一个语句块），那么这个语句块的开始标签就是t的下一个标签
+			if (t->sibling)
+				t->sibling->label.begin_label = t->label.next_label;
+			
+			// 递归获得两个孩子的标签
+			recursive_get_label(e);
+			recursive_get_label(s);
+			recursive_get_label(have_else);
+			
 			break;
 		}
     /* ... */
@@ -318,7 +562,7 @@ void tree::stmt_get_label(Node *t)
 void tree::expr_get_label(Node *t)
 {
 	// 如果节点的类型不是布尔型，则跳过
-	if (t->type != Boolean)
+	if (t->type != Boolean && t->type != Integer)
 		return;
 
 	Node *e1 = t->children[0];  // 运算数1
@@ -335,8 +579,22 @@ void tree::expr_get_label(Node *t)
 		break;
 
 	case OP_OR:
+		// 运算符为1时生成的标签是要干什么。
+		e1->label.true_label = e2->label.true_label = t->label.true_label;  // 运算符2真值的标签等于表达式真值的标签
 		break;
-    /* ... */
+	
+	case OP_NOT:
+		// 运算符为1时生成的标签是要干什么。
+		// e1->label.true_label = new_label();  // 是真值时创建新的标签
+		e1->label.true_label = t->label.false_label;  // 其中任意一个假的标签都是相同的
+		break;
+    // case OP_NEQ:
+	// 	// 运算符为1时生成的标签是要干什么。
+	// 	e1->label.true_label = new_label();  // 是真值时创建新的标签
+	// 	e2->label.true_label = t->label.true_label;  // 运算符2真值的标签等于表达式真值的标签
+	// 	e1->label.false_label = e2->label.false_label = t->label.false_label;  // 其中任意一个假的标签都是相同的
+	// 	break;
+	/* ... */
 	}
 
 	// 对运算数，递归生成标签
@@ -364,6 +622,7 @@ void tree::decl_get_label(Node *t)
 // 递归生成标签
 void tree::recursive_get_label(Node *t)
 {
+	if(!t) return;
 	// 如果是语句，就语句获得标签
 	if (t->kind == STMT_NODE)
 		stmt_get_label(t);
@@ -377,9 +636,11 @@ void tree::recursive_get_label(Node *t)
 // 生成标签
 void tree::get_label(void)
 {
+	// cout << "开始生成标签" << endl;
 	Node *p = root;
 	// 从根开始递归生成标签。是自顶向下的过程。
 	recursive_get_label(p);
+	// cout << "标签生成成功" << endl;
 }
 
 // 生成asm头部
@@ -418,14 +679,14 @@ void tree::gen_decl(ostream &out)
 			out << "\t.string\t" << symtbl.table[const_content][i].content << endl;
 		}
 	}
-	out << "\t.bss" << endl;
+	out << endl;
 
+	out << "\t.section .bss" << endl;
 	for(symtbl.iter = symtbl.table.begin(); symtbl.iter != symtbl.table.end(); symtbl.iter++)
 	{
-		// out<<symtbl.iter->first<<endl;
 		for(int i = 0; i < int(symtbl.table[symtbl.iter->first].size()); i++)
 		{
-			// out << symtbl.table[symtbl.iter->first][i].type << endl;
+			if(symtbl.table[symtbl.iter->first][i].numbers || symtbl.table[symtbl.iter->first][i].stars) continue;
 			switch(symtbl.table[symtbl.iter->first][i].type)
 			{
 			case Integer:
@@ -433,16 +694,38 @@ void tree::gen_decl(ostream &out)
 				out << "\t.zero\t4" << endl;
 				out << "\t.align\t4" << endl;
 				break;
+			case Char:
+				out << "\t.comm " << "_" << symtbl.iter->first << i << ", 4" << endl;
+				break;
 			}
 		}
 	}
+	out << endl;
 
-	// 创建临时变量空间
-	for (int i = 0; i < max_temp; i++)
+	out << "\t.section .data" << endl;
+	for(symtbl.iter = symtbl.table.begin(); symtbl.iter != symtbl.table.end(); symtbl.iter++)
 	{
-		out << "t" <<  i << ":" << endl;
-        out << "\t.zero\t4" << endl;
-        out << "\t.align\t4" << endl;
+		for(int i = 0; i < int(symtbl.table[symtbl.iter->first].size()); i++)
+		{
+			if(symtbl.table[symtbl.iter->first][i].numbers)
+			{
+				switch(symtbl.table[symtbl.iter->first][i].type)
+				{
+				case Integer:
+					out << "_" << symtbl.iter->first << i << ":" << endl;
+					out << ".long 0";
+					for(int j = 1; j < symtbl.table[symtbl.iter->first][i].numbers; j++)
+						out << ", 0";
+					out << endl;
+					break;
+				}
+			}
+			else if(symtbl.table[symtbl.iter->first][i].stars)
+			{
+				out << "\t.comm " ;
+				out << "_" << symtbl.iter->first << i << ", 4" << endl;
+			}
+		}
 	}
 }
 
@@ -455,29 +738,45 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 		// 遍历所有的孩子节点
 		for (int i = 0; t->children[i]; i++)
 		{
+			// out << i << endl;
+			// out << t->children[i]->kind << "   " << t->children[i]->kind_kind << endl;
 			// 递归生成当前孩子的代码
 			recursive_gen_code(out, t->children[i]);
 		}
 		return;
 	}
 	if (t->label.begin_label != "")
-			out << t->label.begin_label << ":" << endl;
+		out << t->label.begin_label << ":" << endl;
 	// 如果是个while循环语句
 	if (t->kind_kind == WHILE_STMT)
 	{
-		// if (t->label.begin_label != "")
-		// 	out << t->label.begin_label << ":" << endl;
 		recursive_gen_code(out, t->children[0]);  // 递归生成循环条件的asm码
+
 		recursive_gen_code(out, t->children[1]);  // 递归生成循环体的asm码
 		// 跳回到循环开始的地方(while...)
 		out << "\tjmp " << t->label.begin_label << endl;
 	}
+	else if(t->kind_kind == FOR_STMT)
+	{
+		recursive_gen_code(out, t->children[0]);
+		recursive_gen_code(out, t->children[1]);
+		recursive_gen_code(out, t->children[3]);
+		recursive_gen_code(out, t->children[2]);
+		out << "\tjmp " << t->children[1]->label.begin_label << endl;
+		out << endl;
+	}
 	else if (t->kind_kind == IF_STMT)
 	{
-		// if (t->label.begin_label != "")
-		// 	out << t->label.begin_label << ":" << endl;
 		recursive_gen_code(out, t->children[0]);  // 递归生成条件的asm码
 		recursive_gen_code(out, t->children[1]);  // 递归生成语句体的asm码
+		out << "\tjmp " << t->label.next_label << endl;
+		recursive_gen_code(out, t->children[2]);
+	}
+	else if (t->kind_kind == ELSE_STMT)
+	{
+		// cout << "生成else的代码" << endl;
+		// cout << "else的开始标签为" << t->label.begin_label << endl;
+		recursive_gen_code(out, t->children[0]);
 	}
 	// 如果是个print语句
 	else if (t->kind_kind == PRINT_STMT)
@@ -494,8 +793,10 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 				if(p->children[i]->kind_kind == ID_EXPR)
 				{
 					out << "\tmovl ";
-					out << "_" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq;
-					out << ", %eax" << endl;
+					if(symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position)
+						out << symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position + STACK_SIZE << "(%esp), %eax" << endl;
+					else
+						out << "_" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq << ", %eax" << endl;
 					out << "\tpushl %eax" << endl;
 				}
 				else if (p->children[i]->kind_kind == CONST_EXPR)
@@ -505,18 +806,23 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 				}
 				else
 				{
-					out << "\tmovl ";
-					out << "t" << p->children[i]->temp_var;
-					out << ", %eax" << endl;
+					if(in_function)
+					{
+						out << "\tmovl " << p->children[i]->temp_var_pos << "(%esp), %eax" << endl;
+					}
+					else
+						out << "\tmovl t" << p->children[i]->temp_var << ", %eax" << endl;
 					out << "\tpushl %eax" << endl;
 				}
 				switch(p->children[i]->type)
 				{
 				case Boolean:
-					sum += 1;
+					// sum += 1;
+					sum += 4;
 					break;
 				case Char:
-					sum += 1;
+					// sum += 1;
+					sum += 4;
 					break;
 				default:
 					sum += 4;
@@ -537,8 +843,10 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 				if(p->children[i]->kind_kind == ID_EXPR)
 				{
 					out << "\tmovl ";
-					out << "_" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq;
-					out << ", %eax" << endl;
+					if(symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position)
+						out << symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position + STACK_SIZE << "(%esp), %eax" << endl;
+					else
+						out << "_" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq << ", %eax" << endl;
 					out << "\tpushl %eax" << endl;
 				}
 				else if (p->children[i]->kind_kind == CONST_EXPR)
@@ -548,18 +856,23 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 				}
 				else
 				{
-					out << "\tmovl ";
-					out << "t" << p->children[i]->temp_var;
-					out << ", %eax" << endl;
+					if(in_function)
+					{
+						out << "\tmovl " << p->children[i]->temp_var_pos << "(%esp), %eax" << endl;
+					}
+					else
+						out << "\tmovl t" << p->children[i]->temp_var << ", %eax" << endl;
 					out << "\tpushl %eax" << endl;
 				}
 				switch(p->children[i]->type)
 				{
 				case Boolean:
-					sum += 1;
+					// sum += 1;
+					sum += 4;
 					break;
 				case Char:
-					sum += 1;
+					// sum += 1;
+					sum += 4;
 					break;
 				default:
 					sum += 4;
@@ -586,17 +899,27 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 		i = i - 1;
 		for(; i >= 0; i--)
 		{
-			out << "\tpushl $";
 			switch(p->children[i]->kind_kind)
 			{
 			case ID_EXPR:
-				out << "_" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq << endl;
+				if(symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position)
+				{
+					out << "\tmovl " << symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position + STACK_SIZE << "(%esp), %eax" << endl;
+					out << "\tpushl %eax" << endl;
+				}
+				else
+					out << "\tpushl $_" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq << endl;
 				break;
 			// case CONST_EXPR:
 			// 	out << p->children[i]->attr.vali << endl;
 			// 	break;
 			default:
-				out << "t" << p->children[i]->temp_var << endl;
+				if(in_function)
+				{
+					out << "\tpushl " << p->children[i]->temp_var_pos << "(%esp)";
+				}
+				else
+					out << "\tpushl $t" << p->children[i]->temp_var << endl;
 				break;
 			}
 			switch(p->children[i]->type)
@@ -619,12 +942,16 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 	}
 	else if (t->kind_kind == RETURN_STMT)
 	{
+		out << "找到了一个return" << endl;
 		Node*p = t->children[0];
 		recursive_gen_code(out, p);
 		out << "\tmovl ";
 		if(p->kind_kind == ID_EXPR)
 		{
-			out << "_" << p->attr.name << p->attr.symtbl_seq;
+			if(symtbl.table[p->attr.name][p->attr.symtbl_seq].position)
+				out << symtbl.table[p->attr.name][p->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+			else
+				out << "_" << p->attr.name << p->attr.symtbl_seq;
 		}
 		else if(p->kind_kind == CONST_EXPR)
 		{
@@ -632,9 +959,13 @@ void tree::stmt_gen_code(ostream &out, Node *t)
 		}
 		else 
 		{
-			out << "t" << p->temp_var;
+			if(in_function)
+				out << p->temp_var_pos << "(%esp)";
+			else
+				out << "t" << p->temp_var;
 		}
 		out << ", %eax" << endl;
+		out << "\taddl $" << STACK_SIZE << ", %esp" << endl;
 		out << "\tret" << endl;
 	}
     /* ... */
@@ -657,28 +988,101 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		if(t->attr.op == OP_ASSIGN)
 		{
 			recursive_gen_code(out, e2);
-			recursive_gen_code(out, e1);
+			if(e1->kind_kind == ARRAY_EXPR)
+			{
+				int i = 0;
+				e1->temp_var_pos = t_position;
+				t_position -= 4;
+				out << "\tmovl $0, " << e1->temp_var_pos << "(%esp)" << endl;
+				for(Node* p = e1->children[0]; p; p = p->sibling, i++)
+				{
+					recursive_gen_code(out, p->children[0]);
+					if(p->children[0]->kind_kind == CONST_EXPR)
+					{
+						out << "\taddl $" << (p->children[0]->attr.vali) * symtbl.table[e1->attr.name][e1->attr.symtbl_seq].adds[i] << ", " << e1->temp_var_pos << "(%esp)" << endl;
+					}
+					else if (p->children[0]->kind_kind == ID_EXPR)
+					{
+						out << "\tmovl ";
+						if(symtbl.table[p->children[0]->attr.name][p->children[0]->attr.symtbl_seq].position)
+							out << symtbl.table[p->children[0]->attr.name][p->children[0]->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+						else
+							out << "_" << p->children[0]->attr.name << p->children[0]->attr.symtbl_seq;
+						out << ", %eax" << endl;
+						out << "\timul $" << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].adds[i] << ", %eax" << endl;
+						out << "\taddl %eax, " << e1->temp_var_pos << "(%esp)" << endl;
+					}
+				}
+				out << "\tmovl " << e1->temp_var_pos << "(%esp), %edi" << endl;
+			}
+			else if(e1->kind_kind == OP_EXPR && e1->attr.op == OP_STAR)
+			{
+				Node* temp = e1;
+				for(; temp->attr.op == OP_STAR; temp = temp->children[0]);
+				recursive_gen_code(out, temp);
+				if(temp->kind_kind == ID_EXPR)
+				{
+					out << "\tmovl _" << temp->attr.name << temp->attr.symtbl_seq << ", %ebx" << endl;
+					for(Node* i = e1->children[0]; i->attr.op == OP_STAR; i = i->children[0])
+					{
+						out << "\tmovl 4(%ebx), %ebx" << endl;
+					}
+				}
+			}
 			out << "\tmovl ";
 			if(e2->kind_kind == ID_EXPR)
 			{
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
+				if(symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position)
+					out << symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << e2->attr.name << e2->attr.symtbl_seq;
 				out << ", %eax" << endl;
-				out << "\tmovl %eax, _";
-				out << e1->attr.name << e1->attr.symtbl_seq << endl;
+				out << "\tmovl %eax, " << endl;
 			}
 			else if(e2->kind_kind == CONST_EXPR)
 			{
-				out << "$" << e2->attr.vali;
-				out << ", _";
-				out << e1->attr.name << e1->attr.symtbl_seq << endl;
+				if(e2->type == Integer)
+					out << "$" << e2->attr.vali << ", ";
+				else
+				{
+					out << "$" << (int)e2->attr.valc << ", ";
+				}
+				
 			}
 			else
 			{
-				out << "t" << e2->temp_var;
-				out << ", %eax" << endl;
-				out << "\tmovl %eax, _";
-				out << e1->attr.name << e1->attr.symtbl_seq << endl;
+
+				if(in_function)
+				{
+					out << e2->temp_var_pos << "(%esp), %eax" << endl;
+				}
+				else
+					out << "t" << e2->temp_var << ", %eax" << endl;
+				out << "\tmovl %eax, ";
 			}
+
+			if(e1->kind_kind == ID_EXPR)
+			{
+				if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+					out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
+				if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+					out << "\tmovl " << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp), %eax";
+				else
+					out << "\tmovl _" << e1->attr.name << e1->attr.symtbl_seq << ", %eax" << endl;
+			}
+			else if(e1->kind_kind == ARRAY_EXPR)
+			{
+				out << "_" << e1->attr.name << e1->attr.symtbl_seq << "(, %edi, 4)" << endl;
+			}
+			else if(e1->kind_kind == OP_EXPR && e1->attr.op == OP_STAR)
+			{
+				out << "4(%ebx)" << endl;
+			}
+
+			save_result(out, t);
+
 			return;
 		}
 
@@ -688,238 +1092,261 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		case OP_PLUS:
 			recursive_gen_code(out, e1);
 			recursive_gen_code(out, e2);
-			// 把运算符1的值先给%eax
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
-
-			// 做加法
-			out << "\taddl ";
-			// 如果运算符2的类型的类型是标识符
-			if (e2->kind_kind == ID_EXPR)
-				// 输出标识符
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			// 如果是常量
-			else if (e2->kind_kind == CONST_EXPR)
-				// 输出数值
-				out << "$" << e2->attr.vali;
-			// 以上情况都不是，就输出临时变量
-			else out << "t" << e2->temp_var;
-			out << ", %eax" << endl;  // 将值赋给%eax
-			// 把结果给t的临时变量
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "addl");
+			save_result(out, t);
+			
 			break;
 		// 减法
 		case OP_MINUS:
 			recursive_gen_code(out, e1);
 			recursive_gen_code(out, e2);
-			// 把运算符1的值先给%eax
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
 
-			// 做减法
-			out << "\tsubl ";
-			// 如果运算符2的类型的类型是标识符
-			if (e2->kind_kind == ID_EXPR)
-				// 输出标识符
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			// 如果是常量
-			else if (e2->kind_kind == CONST_EXPR)
-				// 输出数值
-				out << "$" << e2->attr.vali;
-			// 以上情况都不是，就输出临时变量
-			else out << "t" << e2->temp_var;
-			out << ", %eax" << endl;  // 将值赋给%eax
-			// 把结果给t的临时变量
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			if(e2)
+			{
+				movl_to_eax(out, e1);
+				op_to_eax(out, e2, "subl");
+				save_result(out, t);
+			}
+			else
+			{
+				movl_to_eax(out, e1);
+				out << "\tsubl $0, %eax" << endl;
+				save_result(out, t);
+			}
+
 			break;
 		// 乘法
 		case OP_MULT:
 			recursive_gen_code(out, e1);
 			recursive_gen_code(out, e2);
-			// 把运算符1的值先给%eax
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
 
-			// 做乘法
-			out << "\timul ";
-			// 如果运算符2的类型的类型是标识符
-			if (e2->kind_kind == ID_EXPR)
-				// 输出标识符
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			// 如果是常量
-			else if (e2->kind_kind == CONST_EXPR)
-				// 输出数值
-				out << "$" << e2->attr.vali;
-			// 以上情况都不是，就输出临时变量
-			else out << "t" << e2->temp_var;
-			out << ", %eax" << endl;  // 将值赋给%eax
-			// 把结果给t的临时变量
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "imul");
+			save_result(out, t);
+
 			break;
 		// 除法
 		case OP_DIV:
 			recursive_gen_code(out, e1);
 			recursive_gen_code(out, e2);
-			// 把运算符1的值先给%eax
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
 
-			// 做除法
-			out << "\tidiv ";
-			// 如果运算符2的类型的类型是标识符
-			if (e2->kind_kind == ID_EXPR)
-				// 输出标识符
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			// 如果是常量
-			else if (e2->kind_kind == CONST_EXPR)
-				// 输出数值
-				out << "$" << e2->attr.vali;
-			// 以上情况都不是，就输出临时变量
-			else out << "t" << e2->temp_var;
-			out << ", %eax" << endl;  // 将值赋给%eax
-			// 把结果给t的临时变量
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			movl_to_eax(out, e1);
+			out << "\tmovl $0, %edx" << endl;
+			movl_to_other_register(out, e2, "%ebx");
+			out << "\tidivl %ebx" << endl;
+			save_result(out, t);
+
+			break;
+		// 取模运算
+		case OP_MOD:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			out << "\tmovl $0, %edx" << endl;
+			movl_to_other_register(out, e2, "%ebx");
+			out << "\tidivl %ebx" << endl;
+			out << "\tmovl %edx, %eax" << endl;
+			save_result(out, t);
+
 			break;
 		// 与
 		case OP_AND:
 			recursive_gen_code(out, e1);
 			recursive_gen_code(out, e2);
-			// 把运算符1的值先给%eax
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
 
-			// 做加法
-			out << "\tand ";
-			// 如果运算符2的类型的类型是标识符
-			if (e2->kind_kind == ID_EXPR)
-				// 输出标识符
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			// 如果是常量
-			else if (e2->kind_kind == CONST_EXPR)
-				// 输出数值
-				out << "$" << e2->attr.vali;
-			// 以上情况都不是，就输出临时变量
-			else out << "t" << e2->temp_var;
-			out << ", %eax" << endl;  // 将值赋给%eax
-			// 把结果给t的临时变量
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "and");
+			save_result(out, t);
+
+			out << "\tcmpl $0, %eax" << endl;
+			if(t->label.false_label != "")
+				out << "\tje " << t->label.false_label << endl;
+
 			break;
+		// 或
+		case OP_OR:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "or");
+			save_result(out, t);
+
+			out << "\tcmpl $0, %eax" << endl;
+			if(t->label.false_label != "")
+				out << "\tje " << t->label.false_label << endl;
+
+			break;
+		// 非
 		case OP_NOT:
 			recursive_gen_code(out, e1);
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
 
-			out << "\txor ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			movl_to_eax(out, e1);
+			op_to_eax(out, e1, "xor");
+			save_result(out, t);
+
+			out << "\tcmpl $0, %eax" << endl;
+			if(t->label.false_label != "")
+				out << "\tje " << t->label.false_label << endl;
+			
 			break;
 		// 大于
 		case OP_L:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "cmpl");
+			save_result(out, t);
+
+			if(t->label.false_label != "")
+				out << "\tjle " << t->label.false_label <<endl;
+
 			break;
+		// 大于等于
+		case OP_LEQ:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "cmpl");
+			save_result(out, t);
+
+			if(t->label.false_label != "")
+				out << "\tjl " << t->label.false_label <<endl;
+
+			break;
+		// 小于
+		case OP_S:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "cmpl");
+			save_result(out, t);
+
+			if(t->label.false_label != "")
+				out << "\tjge " << t->label.false_label <<endl;
+			break;
+		// 小于等于
+		case OP_SEQ:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "cmpl");
+			save_result(out, t);
+
+			if(t->label.false_label != "")
+				out << "\tjg " << t->label.false_label <<endl;
+
+			break;
+		// 等于
 		case OP_EQ:
 			recursive_gen_code(out, e1);
 			recursive_gen_code(out, e2);
-			// 把运算符1的值先给%eax
-			out << "\tmovl ";
-			// 运算符1的类型的类型是标识符
-			if (e1->kind_kind == ID_EXPR)
-				// 输出标识符的名称
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq;
-			// 如果运算符1的类型的类型是常量
-			else if (e1->kind_kind == CONST_EXPR)
-				// 直接输出数值
-				out << "$" << e1->attr.vali;
-			// 以上都不是的话，就是临时变量（常量是字符的话，在类型检查的时候就查出来了）
-			else out << "t" << e1->temp_var;
-			out << ", %eax" <<endl;
 
-			// 做比较
-			out << "\tcmpl ";
-			// 如果运算符2的类型的类型是标识符
-			if (e2->kind_kind == ID_EXPR)
-				// 输出标识符
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			// 如果是常量
-			else if (e2->kind_kind == CONST_EXPR)
-				// 输出数值
-				out << "$" << e2->attr.vali;
-			// 以上情况都不是，就输出临时变量
-			else out << "t" << e2->temp_var;
-			out << ", %eax" << endl;  // 将值赋给%eax
-			// // 把结果给t的临时变量
-			// out << "\tmovl %eax, $t" << t->temp_var << endl;
-			// out << e1->label.next_label << endl;
-			out << "\tjne " << t->label.false_label <<endl;
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "cmpl");
+			save_result(out, t);
+
+			if(t->label.false_label != "")
+				out << "\tjne " << t->label.false_label <<endl;
+
+			break;
+		// 不等于
+		case OP_NEQ:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "cmpl");
+			save_result(out, t);
+
+			if(t->label.false_label != "")
+				out << "\tje " << t->label.false_label <<endl;
+			
+			break;
+		case OP_PLUSASSIGN:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "addl");
+			save_result(out, e1);
+
+			break;
+		case OP_MINUSASSIGN:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "subl");
+			save_result(out, e1);
+
+			break;
+		case OP_MULASSIGN:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			op_to_eax(out, e2, "imul");
+			save_result(out, e1);
+
+			break;
+		case OP_DIVASSIGN:
+			recursive_gen_code(out, e1);
+			recursive_gen_code(out, e2);
+
+			movl_to_eax(out, e1);
+			out << "\tmovl $0, %edx" << endl;
+			movl_to_other_register(out, e2, "%ebx");
+			out << "\tidivl %ebx" << endl;
+			save_result(out, e1);
+
+			break;
+		// 取值
+		case OP_STAR:
+			recursive_gen_code(out, e1);
+
+			movl_to_eax(out, e1);
+			out << "\tmovl 4(%eax), %eax" << endl;
+			save_result(out, t);
+
+			break;
+		// 取地址
+		case OP_POS:
+			recursive_gen_code(out, e1);
+			if(e1->kind_kind == ID_EXPR)
+			{
+				if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+				{
+					out << "\tmovl %esp, %eax" << endl;
+					out << "\taddl " << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << ", %eax" << endl;
+				}
+				else
+				{
+					out << "\tmovl $" << "_" << e1->attr.name << e1->attr.symtbl_seq << ", %eax" << endl;
+				}
+			}
+			else
+			{
+				if(in_function)
+				{
+					out << "\tmovl %esp, %eax" << endl;
+					out << "\taddl " << e1->temp_var_pos << ", %eax" << endl;
+				}
+				else
+				{
+					out << "\tmovl $t" << e1->temp_var << ", %eax" << endl;
+				}
+			}
+
+			save_result(out, t);
+
 			break;
 		default:
 			break;
@@ -932,24 +1359,35 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		if(!t->children[1])
 		{
 			out << "\tcall " << t->children[0]->attr.name << endl;
-			out << "\tmovl %eax, t" << t->temp_var << endl;
+			if(in_function && t->temp_var_pos < 0)
+			{
+				t->temp_var_pos = t_position;
+				t_position -= 4;
+				out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;;
+			}
+			else if (in_function)
+			{
+				out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;
+			}
+			else
+				out << "\tmovl %eax, t" << t->temp_var << endl;
 			return;
 		}
+
 		int i = 0, j;
 		Node* p = t->children[1];
-		// cout << "获得了p" << endl;
 		for(; i < MAX_PARAM && p->children[i]; i++);
 		j = i;
-		// cout << "确定了i" << endl;
 		for(i = i - 1; i >= 0; i--)
 		{
 			recursive_gen_code(out, p->children[i]);
 			switch(p->children[i]->kind_kind)
 			{
 			case ID_EXPR:
-				// get_temp_var(p->children[i]);
-				out << "\tmovl _" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq << ", %eax" << endl;
-				// out << "\tmovl %eax, t" << p->children[i]->temp_var << endl;
+				if(symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position)
+					out << "\tmovl " << symtbl.table[p->children[i]->attr.name][p->children[i]->attr.symtbl_seq].position + STACK_SIZE << "(%esp), %eax" << endl;
+				else
+					out << "\tmovl _" << p->children[i]->attr.name << p->children[i]->attr.symtbl_seq << ", %eax" << endl;
 				out << "\tpushl %eax" << endl;
 				break;
 			case CONST_EXPR:
@@ -957,8 +1395,10 @@ void tree::expr_gen_code(ostream &out, Node *t)
 				out << "\tpushl %eax" << endl;
 				break;
 			default:
-				
-				out << "\tmovl t" << p->children[i]->temp_var << ", %eax" << endl;
+				if(in_function)
+					out << "\tmovl " << p->children[i]->temp_var_pos << "(%esp), %eax" << endl;
+				else
+					out << "\tmovl t" << p->children[i]->temp_var << ", %eax" << endl;
 				out << "\tpushl %eax" << endl;
 				break;
 			}
@@ -974,9 +1414,52 @@ void tree::expr_gen_code(ostream &out, Node *t)
 		}
 		out << "\tcall " << t->children[0]->attr.name << endl;
 		out << "\taddl $" << sum << ", %esp" << endl;
-		out << "\tmovl %eax, t" << t->temp_var << endl;
+		
+		if(in_function && t->temp_var_pos < 0)
+			{
+				
+				t->temp_var_pos = t_position;
+				t_position -= 4;
+				out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;;
+			}
+			else if (in_function)
+			{
+				out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;
+			}
+			else
+				out << "\tmovl %eax, t" << t->temp_var << endl;
 		i = j;
 		out << endl;
+	}
+	else if(t->kind_kind == ARRAY_EXPR)
+	{
+		int i = 0;
+		t->temp_var_pos = t_position;
+		t_position -= 4;
+		out << "\tmovl $0, " << t->temp_var_pos << "(%esp)" << endl;
+		for(Node* p = t->children[0]; p; p = p->sibling, i++)
+		{
+			recursive_gen_code(out, p->children[0]);
+			if(p->children[0]->kind_kind == CONST_EXPR)
+			{
+				out << "\taddl $" << (p->children[0]->attr.vali) * symtbl.table[t->attr.name][t->attr.symtbl_seq].adds[i] << ", " << t->temp_var_pos << "(%esp)" << endl;
+			}
+			else if (p->children[0]->kind_kind == ID_EXPR)
+			{
+				out << "\tmovl ";
+				if(symtbl.table[p->children[0]->attr.name][p->children[0]->attr.symtbl_seq].position)
+					out << symtbl.table[p->children[0]->attr.name][p->children[0]->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << p->children[0]->attr.name << p->children[0]->attr.symtbl_seq;
+				out << ", %eax" << endl;
+				out << "\timul $" << symtbl.table[t->attr.name][t->attr.symtbl_seq].adds[i] << ", %eax" << endl;
+				out << "\taddl %eax, " << t->temp_var_pos << "(%esp)" << endl;
+			}
+		}
+		out << "\tmovl " << t->temp_var_pos << "(%esp), %edi" << endl;
+		// out << "\tsubl $1, %edi" << endl;
+		out << "\tmovl _" << t->attr.name << t->attr.symtbl_seq << "(, %edi, 4), %eax" << endl;
+		out << "\tmovl %eax, " << t->temp_var_pos << "(%esp)" << endl;
 	}
 }
 
@@ -988,42 +1471,73 @@ void tree::decl_gen_code(ostream &out, Node *t)
 	Node*  p = t->children[1]->children[0];
 	for(; p ; p = p->sibling)
 	{
-		if(p->attr.op != OP_ASSIGN)
+		if(p->attr.op != OP_ASSIGN && p->attr.op != OP_STAR)
 			continue;
+		
 		Node* e1 = p->children[0];
 		Node* e2 = p->children[1];
-		recursive_gen_code(out, e2);
-		recursive_gen_code(out, e1);
-		out << "\tmovl ";
-		if(e2->kind_kind == ID_EXPR)
+		
+		if(p->attr.op == OP_ASSIGN)
 		{
-			if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
-				out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position << "(%esp)";
+			recursive_gen_code(out, e2);
+			recursive_gen_code(out, e1);
+			out << "\tmovl ";
+			if(e2->kind_kind == ID_EXPR)
+			{
+				if(symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position)
+					out << symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << e2->attr.name << e2->attr.symtbl_seq;
+				out << ", %eax" << endl;
+				out << "\tmovl %eax, " << endl;
+				if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+					out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
+			}
+			else if(e2->kind_kind == CONST_EXPR)
+			{
+				out << "$" << e2->attr.vali << ", ";
+				if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+					out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
+			}
 			else
-				out << "_" << e2->attr.name << e2->attr.symtbl_seq;
-			out << ", %eax" << endl;
-			out << "\tmovl %eax, " << endl;
-			if(symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position)
-				out << symtbl.table[e2->attr.name][e2->attr.symtbl_seq].position << "(%esp)";
-			else
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
+			{
+				if(in_function)
+				{
+					out << e2->temp_var_pos << "(%esp), %eax" << endl;
+				}
+				else
+					out << "t" << e2->temp_var << ", %eax" << endl;
+				out << "\tmovl %eax, ";
+				if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
+					out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position + STACK_SIZE << "(%esp)";
+				else
+					out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
+			}
 		}
-		else if(e2->kind_kind == CONST_EXPR)
-		{
-			out << "$" << e2->attr.vali << ", ";
-			if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
-				out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position << "(%esp)";
-			else
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
-		}
-		else
-		{
-			out << "t" << e2->temp_var << ", ";
-			if(symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position)
-				out << symtbl.table[e1->attr.name][e1->attr.symtbl_seq].position << "(%esp)";
-			else
-				out << "_" << e1->attr.name << e1->attr.symtbl_seq << endl;
-		}
+		// else if (p->attr.op == OP_STAR)
+		// {
+		// 	Node* temp;
+		// 	for(temp = p; temp->attr.op == OP_STAR; temp = temp->children[0]);
+		// 	for(Node* i = p; i->attr.op == OP_STAR; i = i->children[0])
+		// 	{
+		// 		if(symtbl.table[temp->attr.name][temp->attr.symtbl_seq].position)
+		// 		{
+		// 			out << "\tmovl %esp, %eax" << endl;
+		// 			out << "\tsubl $" << symtbl.table[temp->attr.name][temp->attr.symtbl_seq].position + STACK_SIZE << ", %eax" << endl;
+		// 			out << "\tmovl %eax, " << symtbl.table[temp->attr.name][temp->attr.symtbl_seq].position + STACK_SIZE << "(%esp)" << endl;
+		// 		}
+		// 		else
+		// 		{
+		// 			out << "\tmovl $_" << temp->attr.name << temp->attr.symtbl_seq << ", %eax" << endl;
+		// 			out << "\tmovl %eax, _" << temp->attr.name << temp->attr.symtbl_seq << endl;
+		// 		}
+				
+		// 	}
+		// }
 		continue;
 	}
 }
@@ -1036,46 +1550,29 @@ void tree::func_gen_code(ostream &out, Node *t)
 	out << "\t.type " << t->children[1]->attr.name << ", @function" << endl;
 	if(t->label.begin_label != "")
 		out << t->label.begin_label << ":" << endl;
-	int sum = 0;
+
+	out << "\tsubl $" << STACK_SIZE << ", %esp" << endl;
 	
 	Node* e2;
 	if(t->children[2]->kind == LIST_NODE)
 	{
-		// for(Node* p = t->children[2]->children[0]; p; p = p->sibling)
-		// {
-		// 	switch(p->children[1]->type)
-		// 	{
-		// 	case Integer:
-		// 		sum += 4;
-		// 		out << "\tmovl " << sum << "(%esp), %eax" << endl;
-		// 		out << "\tmovl %eax, ";
-		// 		out << "_" << p->children[1]->attr.name << p->children[1]->attr.symtbl_seq << endl;
-		// 		break;
-		// 	case Char:
-		// 		sum += 1;
-		// 		out << "\tmovl " << sum << "(%esp), %eax" << endl;
-		// 		out << "\tmovl %eax, ";
-		// 		out << "_" << p->children[1]->attr.name << p->children[1]->attr.symtbl_seq << endl;
-		// 		break;
-		// 	case Boolean:
-		// 		sum += 1;
-		// 		out << "\tmovl " << sum << "(%esp), %eax" << endl;
-		// 		out << "\tmovl %eax, ";
-		// 		out << "_" << p->children[1]->attr.name << p->children[1]->attr.symtbl_seq << endl;
-		// 		break;
-		// 	}
-		// }
 		e2 = t->children[3];
 	}
 	else
 		e2 = t->children[2];
+
+	t_position = STACK_SIZE - 4;
+	in_function = 1;
 	recursive_gen_code(out, e2);
+	t_position = 0;
+	in_function = STACK_SIZE;
 	out << endl;
 }
 
 // 递归生成asm码
 void tree::recursive_gen_code(ostream &out, Node *t)
 {
+	if(!t) return;
 	// 如果是语句
 	if (t->kind == STMT_NODE)
 	{
@@ -1083,7 +1580,7 @@ void tree::recursive_gen_code(ostream &out, Node *t)
 		stmt_gen_code(out, t);
 	}
 	// 如果是表达式语句并且是op表达式
-	else if (t->kind == EXPR_NODE && (t->kind_kind == OP_EXPR || t->kind_kind == FUNC_EXPR))
+	else if (t->kind == EXPR_NODE && (t->kind_kind == OP_EXPR || t->kind_kind == FUNC_EXPR || t->kind_kind == ARRAY_EXPR))
 	{
 		// 生成该语句
 		expr_gen_code(out, t);
@@ -1094,6 +1591,7 @@ void tree::recursive_gen_code(ostream &out, Node *t)
 	}
 	else if (t->kind == DECL_NODE)
 	{
+		STACK_SIZE = t->temp_stack_size;
 		func_gen_code(out, t);
 	}
 	// 其它类型的节点就不做翻译输出

@@ -15,6 +15,12 @@ typedef struct TAG_SYMBOL_ENTRY
 	int param_type[MAX_PARAM] = {-1};
 	int return_type;
 	int position = 0;
+	int numbers = 0;
+	int stars = 0;
+	int special = 0;
+
+	vector<int> dimension;
+	vector<int> adds;
 } symbol_entry;
 
 // 符号表
@@ -28,7 +34,9 @@ public:
 	void match();  // 有了右括号
 	void unmatch();  // 有了左括号
 	void match(string name);  // 仅对名字为name的变量的左括号进行操作
+	void unmatch(string name);
 	int lookup(string name);  // 寻找
+	bool repeat(string name, int pos);  // 重复
 	int insert(string name);  // 插入
 	int insert(string name, int token);  // 插入
 	int insert(string name, string content);  // 插入
